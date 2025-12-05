@@ -15,6 +15,7 @@ interface QuestionsData {
 }
 
 interface TestResult {
+  id?: string
   username: string
   doituong: string
   capbac: string
@@ -50,9 +51,11 @@ export default function QuizApp() {
   const [isLoading, setIsLoading] = useState(true)
 
   // UI state
-  const [currentScreen, setCurrentScreen] = useState<'login' | 'quiz' | 'settings' | 'history' | 'review'>('login')
+  const [currentScreen, setCurrentScreen] = useState<'login' | 'quiz' | 'settings' | 'history' | 'review' | 'admin-results'>('login')
   const [showTestModeSelection, setShowTestModeSelection] = useState(false)
   const [isAddQuestionFormVisible, setIsAddQuestionFormVisible] = useState(false)
+  const [allTestResults, setAllTestResults] = useState<TestResult[]>([])
+  const [selectedTestResult, setSelectedTestResult] = useState<TestResult | null>(null)
 
   // Form state
   const [loginForm, setLoginForm] = useState({
@@ -221,6 +224,42 @@ export default function QuizApp() {
       localStorage.setItem('testHistory', JSON.stringify(history))
     }
     setTestHistory(history)
+  }
+
+  const loadAllTestResults = async () => {
+    try {
+      const response = await fetch('/api/test-results')
+      if (response.ok) {
+        const data = await response.json()
+        setAllTestResults(data)
+      }
+    } catch (error) {
+      console.error('Error loading all test results:', error)
+    }
+  }
+
+  const saveTestResultToServer = async (testResult: TestResult) => {
+    try {
+      const response = await fetch('/api/test-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(testResult),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Reload all results
+        await loadAllTestResults()
+        return data
+      } else {
+        throw new Error('Failed to save test result')
+      }
+    } catch (error) {
+      console.error('Error saving test result to server:', error)
+      alert('Lỗi khi lưu kết quả bài thi vào server.')
+    }
   }
 
   // Login functions
@@ -398,7 +437,7 @@ export default function QuizApp() {
     }
   }
 
-  const nopBai = (bypassConfirm = false) => {
+  const nopBai = async (bypassConfirm = false) => {
     if (!isPracticeMode && !bypassConfirm && !confirm('Bạn có chắc chắn muốn nộp bài không?')) {
       return
     }
@@ -439,12 +478,28 @@ export default function QuizApp() {
 
       const newHistory = [...testHistory, testResult]
       saveTestHistory(newHistory)
+      
+      // Save to server
+      await saveTestResultToServer(testResult)
     }
   }
 
   // Admin functions
   const showSettings = () => {
     setCurrentScreen('settings')
+  }
+
+  const showAdminResults = () => {
+    setCurrentScreen('admin-results')
+    loadAllTestResults()
+  }
+
+  const viewTestResultDetails = (result: TestResult) => {
+    setSelectedTestResult(result)
+  }
+
+  const closeTestResultDetails = () => {
+    setSelectedTestResult(null)
   }
 
   const showAddQuestionForm = () => {
@@ -756,19 +811,30 @@ export default function QuizApp() {
                   {index + 1}. {cauHoi.cauHoi}
                 </div>
                 <div className="choices-container">
-                  {cauHoi.luaChon.map((lc, i) => (
-                    <div key={i} className="choice">
-                      <input
-                        type="radio"
-                        name={`cauhoi_${index}`}
-                        value={i}
-                        checked={answers[index] === i}
-                        onChange={() => chonDapAn(index, i)}
-                        disabled={isSubmitted}
-                      />
-                      <span>{lc}</span>
-                    </div>
-                  ))}
+                  {cauHoi.luaChon.map((lc, i) => {
+                    const isCorrectAnswer = i === cauHoi.dapAn
+                    const isUserAnswer = answers[index] === i
+                    const isIncorrectSelected = isSubmitted && isUserAnswer && !isCorrectAnswer
+                    const isCorrectHighlight = isSubmitted && isCorrectAnswer
+                    
+                    return (
+                      <label 
+                        key={i} 
+                        className={`choice ${isCorrectHighlight ? 'correct' : ''} ${isIncorrectSelected ? 'incorrect' : ''}`}
+                        style={{ cursor: isSubmitted ? 'default' : 'pointer' }}
+                      >
+                        <input
+                          type="radio"
+                          name={`cauhoi_${index}`}
+                          value={i}
+                          checked={answers[index] === i}
+                          onChange={() => chonDapAn(index, i)}
+                          disabled={isSubmitted}
+                        />
+                        <span>{lc}</span>
+                      </label>
+                    )
+                  })}
                 </div>
               </div>
             ))}
@@ -878,8 +944,11 @@ export default function QuizApp() {
   const renderSettingsScreen = () => (
     <div id="settings-screen">
       <h1>QUẢN LÝ BỘ ĐỀ</h1>
-      <button onClick={showAddQuestionForm}>➕ Thêm câu hỏi</button>
-      <button onClick={goBackToMain}>🔙 Quay lại bài thi</button>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        <button onClick={showAddQuestionForm}>➕ Thêm câu hỏi</button>
+        <button onClick={showAdminResults}>📊 Xem kết quả bài thi</button>
+        <button onClick={goBackToMain}>🔙 Quay lại bài thi</button>
+      </div>
 
       <div id="stats">
         Thống kê bộ đề<br/>
@@ -913,63 +982,80 @@ export default function QuizApp() {
       </table>
 
       {isAddQuestionFormVisible && (
-        <div id="addQuestionForm">
-          <h2>Thêm/Sửa câu hỏi</h2>
-          <label htmlFor="questionDoituong">Đối tượng:</label>
-          <select
-            id="questionDoituong"
-            value={questionForm.doituong}
-            onChange={(e) => setQuestionForm({ ...questionForm, doituong: e.target.value })}
+        <div className="dialog-overlay" onClick={cancelEdit}>
+          <dialog 
+            id="addQuestionForm" 
+            open
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                cancelEdit()
+              }
+            }}
           >
-            <option value="Siquan-QNCN">Sĩ quan, QNCN</option>
-            <option value="Chiensimoi">Chiến sĩ mới</option>
-            <option value="Chiensinamthunhat">Chiến sĩ năm thứ nhất</option>
-            <option value="Chiensinamthuhai">Chiến sĩ năm thứ hai</option>
-            <option value="Lopnhanthucvedang">Lớp nhận thức về đảng</option>
-            <option value="Lopdangvienmoi">Lớp đảng viên mới</option>
-          </select>
+            <div className="dialog-header">
+              <h2>Thêm/Sửa câu hỏi</h2>
+              <button className="dialog-close" onClick={cancelEdit} aria-label="Đóng">×</button>
+            </div>
+            <div className="dialog-content">
+              <label htmlFor="questionDoituong">Đối tượng:</label>
+              <select
+                id="questionDoituong"
+                value={questionForm.doituong}
+                onChange={(e) => setQuestionForm({ ...questionForm, doituong: e.target.value })}
+              >
+                <option value="Siquan-QNCN">Sĩ quan, QNCN</option>
+                <option value="Chiensimoi">Chiến sĩ mới</option>
+                <option value="Chiensinamthunhat">Chiến sĩ năm thứ nhất</option>
+                <option value="Chiensinamthuhai">Chiến sĩ năm thứ hai</option>
+                <option value="Lopnhanthucvedang">Lớp nhận thức về đảng</option>
+                <option value="Lopdangvienmoi">Lớp đảng viên mới</option>
+              </select>
 
-          <label htmlFor="questionText">Câu hỏi:</label>
-          <textarea
-            id="questionText"
-            rows={4}
-            value={questionForm.cauHoi}
-            onChange={(e) => setQuestionForm({ ...questionForm, cauHoi: e.target.value })}
-          />
+              <label htmlFor="questionText">Câu hỏi:</label>
+              <textarea
+                id="questionText"
+                rows={4}
+                value={questionForm.cauHoi}
+                onChange={(e) => setQuestionForm({ ...questionForm, cauHoi: e.target.value })}
+              />
 
-          <label>Lựa chọn:</label>
-          <div id="options">
-            {questionForm.luaChon.map((option, index) => (
-              <div key={index}>
-                <input
-                  type="text"
-                  className="option"
-                  placeholder={`Lựa chọn ${index + 1}`}
-                  value={option}
-                  onChange={(e) => {
-                    const newLuaChon = [...questionForm.luaChon]
-                    newLuaChon[index] = e.target.value
-                    setQuestionForm({ ...questionForm, luaChon: newLuaChon })
-                  }}
-                />
+              <label>Lựa chọn:</label>
+              <div id="options">
+                {questionForm.luaChon.map((option, index) => (
+                  <div key={index}>
+                    <input
+                      type="text"
+                      className="option"
+                      placeholder={`Lựa chọn ${index + 1}`}
+                      value={option}
+                      onChange={(e) => {
+                        const newLuaChon = [...questionForm.luaChon]
+                        newLuaChon[index] = e.target.value
+                        setQuestionForm({ ...questionForm, luaChon: newLuaChon })
+                      }}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <label htmlFor="correctAnswer">Đáp án đúng:</label>
-          <select
-            id="correctAnswer"
-            value={questionForm.dapAn}
-            onChange={(e) => setQuestionForm({ ...questionForm, dapAn: parseInt(e.target.value) })}
-          >
-            <option value={0}>Lựa chọn 1</option>
-            <option value={1}>Lựa chọn 2</option>
-            <option value={2}>Lựa chọn 3</option>
-            <option value={3}>Lựa chọn 4</option>
-          </select>
-
-          <button onClick={saveQuestion}>💾 Lưu</button>
-          <button onClick={cancelEdit}>❌ Hủy</button>
+              <label htmlFor="correctAnswer">Đáp án đúng:</label>
+              <select
+                id="correctAnswer"
+                value={questionForm.dapAn}
+                onChange={(e) => setQuestionForm({ ...questionForm, dapAn: parseInt(e.target.value) })}
+              >
+                <option value={0}>Lựa chọn 1</option>
+                <option value={1}>Lựa chọn 2</option>
+                <option value={2}>Lựa chọn 3</option>
+                <option value={3}>Lựa chọn 4</option>
+              </select>
+            </div>
+            <div className="dialog-footer">
+              <button onClick={saveQuestion}>💾 Lưu</button>
+              <button onClick={cancelEdit}>❌ Hủy</button>
+            </div>
+          </dialog>
         </div>
       )}
     </div>
@@ -1023,16 +1109,294 @@ export default function QuizApp() {
     </div>
   )
 
+  const renderAdminResultsScreen = () => {
+    return (
+      <div id="admin-results-screen">
+        <h1>QUẢN LÝ KẾT QUẢ BÀI THI</h1>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <button onClick={showSettings}>⚙️ Quản lý bộ đề</button>
+          <button onClick={goBackToMain}>🔙 Quay lại bài thi</button>
+        </div>
+
+        {/* Danh sách kết quả */}
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          border: '1px solid #dee2e6',
+          overflow: 'hidden'
+        }}>
+          <h2 style={{ padding: '15px 20px', margin: 0, borderBottom: '1px solid #dee2e6' }}>
+            Danh sách bài thi
+          </h2>
+          <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
+            {allTestResults.length === 0 ? (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#6c757d' }}>
+                Chưa có kết quả bài thi nào
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f8f9fa' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>STT</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Họ tên</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Đối tượng</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Đơn vị</th>
+                    <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>Đúng</th>
+                    <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>Sai</th>
+                    <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>Điểm</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Thời gian</th>
+                    <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allTestResults.map((result, index) => (
+                    <tr key={result.id || index} style={{ borderBottom: '1px solid #dee2e6' }}>
+                      <td style={{ padding: '12px' }}>{index + 1}</td>
+                      <td style={{ padding: '12px' }}>{result.username}</td>
+                      <td style={{ padding: '12px' }}>{result.doituong}</td>
+                      <td style={{ padding: '12px' }}>{result.donvi || '-'}</td>
+                      <td style={{ padding: '12px', textAlign: 'center', color: '#28a745', fontWeight: 'bold' }}>
+                        {result.correct}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center', color: '#dc3545', fontWeight: 'bold' }}>
+                        {result.total - result.correct}
+                      </td>
+                      <td style={{
+                        padding: '12px',
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                        color: parseFloat(result.score) >= 8 ? '#28a745' : parseFloat(result.score) >= 6 ? '#ffc107' : '#dc3545'
+                      }}>
+                        {result.score}/10
+                      </td>
+                      <td style={{ padding: '12px', fontSize: '14px' }}>{result.timestamp}</td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <button
+                          onClick={() => viewTestResultDetails(result)}
+                          style={{
+                            backgroundColor: '#2196f3',
+                            color: 'white',
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                          }}
+                        >
+                          Xem chi tiết
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const renderTestResultDetails = () => {
+    if (!selectedTestResult) return null
+
+    return (
+      <div className="dialog-overlay" onClick={closeTestResultDetails}>
+        <dialog
+          open
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              closeTestResultDetails()
+            }
+          }}
+          style={{
+            position: 'relative',
+            background: 'white',
+            borderRadius: '0.5rem',
+            padding: 0,
+            maxWidth: '50rem',
+            width: '90%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 0.25rem 0.9375rem rgba(0, 0, 0, 0.3)',
+            border: 'none'
+          }}
+        >
+          <div className="dialog-header">
+            <h2>Chi tiết bài thi</h2>
+            <button className="dialog-close" onClick={closeTestResultDetails} aria-label="Đóng">×</button>
+          </div>
+          <div className="dialog-content" style={{ padding: '1.25rem' }}>
+            {/* Thống kê tổng quát cho bài thi này */}
+            {(() => {
+              const incorrect = selectedTestResult.total - selectedTestResult.correct
+              const correctPercentage = ((selectedTestResult.correct / selectedTestResult.total) * 100).toFixed(1)
+              
+              return (
+                <div style={{
+                  backgroundColor: '#f8f9fa',
+                  padding: '20px',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                  border: '1px solid #dee2e6'
+                }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '15px' }}>📊 Thống kê tổng quát</h3>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                    gap: '15px'
+                  }}>
+                    <div style={{
+                      backgroundColor: 'white',
+                      padding: '15px',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      border: '1px solid #dee2e6'
+                    }}>
+                      <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>
+                        {selectedTestResult.correct}
+                      </div>
+                      <div style={{ color: '#6c757d', fontSize: '14px' }}>Câu đúng</div>
+                    </div>
+                    <div style={{
+                      backgroundColor: 'white',
+                      padding: '15px',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      border: '1px solid #dee2e6'
+                    }}>
+                      <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc3545' }}>
+                        {incorrect}
+                      </div>
+                      <div style={{ color: '#6c757d', fontSize: '14px' }}>Câu sai</div>
+                    </div>
+                    <div style={{
+                      backgroundColor: 'white',
+                      padding: '15px',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      border: '1px solid #dee2e6'
+                    }}>
+                      <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>
+                        {selectedTestResult.total}
+                      </div>
+                      <div style={{ color: '#6c757d', fontSize: '14px' }}>Tổng số câu</div>
+                    </div>
+                    <div style={{
+                      backgroundColor: 'white',
+                      padding: '15px',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      border: '1px solid #dee2e6'
+                    }}>
+                      <div style={{
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        color: parseFloat(selectedTestResult.score) >= 8 ? '#28a745' : parseFloat(selectedTestResult.score) >= 6 ? '#ffc107' : '#dc3545'
+                      }}>
+                        {selectedTestResult.score}/10
+                      </div>
+                      <div style={{ color: '#6c757d', fontSize: '14px' }}>Điểm số</div>
+                    </div>
+                    <div style={{
+                      backgroundColor: 'white',
+                      padding: '15px',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      border: '1px solid #dee2e6'
+                    }}>
+                      <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#17a2b8' }}>
+                        {correctPercentage}%
+                      </div>
+                      <div style={{ color: '#6c757d', fontSize: '14px' }}>Tỷ lệ đúng</div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
+
+            <div style={{ marginBottom: '20px' }}>
+              <p><strong>Họ và tên:</strong> {selectedTestResult.username}</p>
+              <p><strong>Đối tượng:</strong> {selectedTestResult.doituong}</p>
+              <p><strong>Cấp bậc:</strong> {selectedTestResult.capbac || '-'}</p>
+              <p><strong>Chức vụ:</strong> {selectedTestResult.chucvu || '-'}</p>
+              <p><strong>Đơn vị:</strong> {selectedTestResult.donvi || '-'}</p>
+              <p><strong>Thời gian:</strong> {selectedTestResult.timestamp}</p>
+            </div>
+
+            <div style={{ borderTop: '1px solid #ddd', paddingTop: '20px' }}>
+              <h3 style={{ marginBottom: '15px' }}>Chi tiết từng câu hỏi:</h3>
+              {selectedTestResult.questions.map((q, index) => {
+                const userAnswer = selectedTestResult.answers[index]
+                const isCorrect = userAnswer === q.dapAn
+                const userAnswerText = userAnswer !== -1 && userAnswer !== undefined ? q.luaChon[userAnswer] : 'Chưa trả lời'
+                const correctAnswerText = q.luaChon[q.dapAn]
+
+                return (
+                  <div key={index} style={{
+                    marginBottom: '20px',
+                    padding: '15px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    backgroundColor: isCorrect ? '#f0f9f0' : '#fff5f5'
+                  }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                      Câu {index + 1}: {q.cauHoi}
+                    </div>
+                    <div style={{ marginLeft: '20px' }}>
+                      {q.luaChon.map((lc, i) => {
+                        const isUserAnswer = i === userAnswer
+                        const isCorrectAnswer = i === q.dapAn
+                        let className = ''
+                        if (isCorrectAnswer) className = 'correct'
+                        if (isUserAnswer && !isCorrectAnswer) className = 'incorrect'
+
+                        return (
+                          <div key={i} className={`choice ${className}`} style={{
+                            marginBottom: '5px',
+                            padding: '5px'
+                          }}>
+                            <span>{lc}</span>
+                            {isCorrectAnswer && <span style={{ color: '#28a745', marginLeft: '10px' }}>✓ Đáp án đúng</span>}
+                            {isUserAnswer && !isCorrectAnswer && <span style={{ color: '#dc3545', marginLeft: '10px' }}>✗ Đáp án bạn chọn</span>}
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div style={{
+                      marginTop: '10px',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      backgroundColor: isCorrect ? '#d4edda' : '#f8d7da',
+                      color: isCorrect ? '#155724' : '#721c24',
+                      fontWeight: 'bold'
+                    }}>
+                      {isCorrect ? '✓ Đúng' : '✗ Sai'} - Bạn chọn: {userAnswerText}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <div className="dialog-footer">
+            <button onClick={closeTestResultDetails}>Đóng</button>
+          </div>
+        </dialog>
+      </div>
+    )
+  }
+
   const renderHeader = () => (
     <header className="header-container">
       <img src="/img/LOGO98.png" alt="Logo Trung Đoàn 98" className="logo" />
       <div className="header-content">
         <div className="main-title">
-          <div className="title-left">Trung Đoàn 98 - Sư Đoàn 316</div>
+          <div className="title-left">Trung Đoàn 18 - Sư Đoàn 325</div>
           <div className="title-right">Kiểm tra nhận thức chính trị trực tuyến</div>
         </div>
         <div className="subtitle">
-          Trung thành - Kiên quyết - Triệt để - Đoàn kết - Sáng tạo - Chủ động khắc phục khó khăn
+        Đoàn kết - Kiên cường - Tích cực - Chủ động - Quyết thắng
         </div>
       </div>
     </header>
@@ -1077,6 +1441,8 @@ export default function QuizApp() {
       {currentScreen === 'settings' && renderSettingsScreen()}
       {currentScreen === 'history' && renderHistoryScreen()}
       {currentScreen === 'review' && renderReviewScreen()}
+      {currentScreen === 'admin-results' && renderAdminResultsScreen()}
+      {selectedTestResult && renderTestResultDetails()}
     </>
   )
 }

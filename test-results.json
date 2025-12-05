@@ -1,0 +1,293 @@
+[
+  {
+    "id": "1764951015793",
+    "username": "noobeeb",
+    "doituong": "Siquan-QNCN",
+    "capbac": "444",
+    "chucvu": "666",
+    "donvi": "333",
+    "timestamp": "12/5/2025, 11:10:14 PM",
+    "correct": 1,
+    "total": 25,
+    "score": "0.4",
+    "answers": [
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      2,
+      1,
+      -1,
+      -1,
+      -1,
+      3,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+    ],
+    "questions": [
+      {
+        "cauHoi": "Luật sửa đổi, bổ sung một số điều luật của luật Sĩ quan QĐND Việt Nam (2024) quy định hạn tuổi cao nhất của sĩ quan phục vụ tại ngũ theo cấp bậc quân hàm thượng tá?",
+        "luaChon": [
+          "50 tuổi",
+          "52 tuổi",
+          "54 tuổi",
+          "56 tuổi"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Chữ vàng truyền thống của Lực lượng vũ trang Quân khu 2 là gì?",
+        "luaChon": [
+          "Trung thành, Tự lực, Đoàn kết, Anh dũng, Chiến thắng",
+          "Trung thành, Tự lực, Anh dũng, Đoàn kết, Chủ động khắc phục khó khăn",
+          "Trung thành, Tự lực, Đoàn kết, Sáng tạo, Chiến thắng",
+          "Trung thành, Kiên quyết, Triệt để, Đoàn kết, Anh dũng, Chiến thắng"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Đâu là nhiệm vụ quan trọng của Quân đội Nhân dân Việt Nam trong thời bình?",
+        "luaChon": [
+          "Nghỉ ngơi dài hạn",
+          "Làm công tác dân vận",
+          "Tham gia sản xuất kinh tế",
+          "Huấn luyện và sẵn sàng chiến đấu"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Đâu là một yêu cầu bắt buộc của sĩ quan trong tác phong chỉ huy?",
+        "luaChon": [
+          "Dễ tính với mọi tình huống",
+          "Cho phép linh động quy định",
+          "Tự do sáng tạo trong mọi việc",
+          "Chấp hành nghiêm điều lệnh quân đội"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Phong trào nào giúp sĩ quan nâng cao ý thức chính trị?",
+        "luaChon": [
+          "Cải thiện đời sống",
+          "Thi đua sản xuất",
+          "Học tập và làm theo tư tưởng, đạo đức, phong cách Hồ Chí Minh",
+          "Phát triển kinh tế"
+        ],
+        "dapAn": 2
+      },
+      {
+        "cauHoi": "Sĩ quan cần làm gì để xây dựng mối quan hệ đoàn kết trong đơn vị?",
+        "luaChon": [
+          "Không quan tâm đến chiến sĩ",
+          "Tôn trọng, lắng nghe chiến sĩ",
+          "Cô lập bản thân",
+          "Chỉ trích đồng đội"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Luật sửa đổi, bổ sung một số điều luật của luật Sĩ quan QĐND Việt Nam (2024) quy định hạn tuổi cao nhất của sĩ quan phục vụ tại ngũ theo cấp bậc quân hàm cấp úy?",
+        "luaChon": [
+          "54 tuổi",
+          "50 tuổi",
+          "52 tuổi",
+          "56 tuổi"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Câu nào sau đây phản ánh đúng trách nhiệm của sĩ quan với cấp dưới?",
+        "luaChon": [
+          "Ra lệnh và kiểm tra nghiêm khắc",
+          "Chỉ huy, giáo dục, chăm lo đời sống",
+          "Cho phép nghỉ tùy ý",
+          "Chỉ cần nắm quân số"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Nghị quyết số 57-NQ/TW ngày 22/12/2024 của Bộ Chính trị đề cập vấn đề gì?",
+        "luaChon": [
+          "Tiếp tục thực hiện công cuộc xây dựng nông thôn mới",
+          "Nâng cao chất lượng kiểm tra, giám sát Đảng",
+          "Đột phá phát triển khoa học, công nghệ, đổi mới sáng tạo và chuyển đổi số quốc gia",
+          "Phẩm chất cán bộ, đảng viên trong giai đoạn mới"
+        ],
+        "dapAn": 2
+      },
+      {
+        "cauHoi": "Nghị quyết số 847-NQ/QUTW ngày 28/12/2021 của Quân ủy Trung ương đề cập vấn đề gì?",
+        "luaChon": [
+          "Phòng chống tham nhũng, tiêu cực trong khu vực Nhà nước",
+          "Phát huy phẩm chất Bộ đội Cụ Hồ, kiên quyết chống chủ nghĩa cá nhân",
+          "Tiến hành tốt công tác dân vận trong QĐND Việt Nam",
+          "Tăng cường đổi mới, sáng tạo trong thực hiện nhiệm vụ"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Khi đối mặt với tình huống khẩn cấp, sĩ quan phải làm gì?",
+        "luaChon": [
+          "Giữ bình tĩnh, chỉ huy xử lý đúng quy trình",
+          "Chờ mệnh lệnh",
+          "Đợi ý kiến cấp trên bằng văn bản",
+          "Tránh xa khu vực nguy hiểm"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Đâu là nhiệm vụ quan trọng của sĩ quan trong thời bình?",
+        "luaChon": [
+          "Nghỉ ngơi dài hạn",
+          "Tham gia sản xuất kinh tế",
+          "Huấn luyện và sẵn sàng chiến đấu",
+          "Làm công tác dân vận"
+        ],
+        "dapAn": 2
+      },
+      {
+        "cauHoi": "Quân đội Nhân dân Việt Nam thành lập ngày tháng năm nào?",
+        "luaChon": [
+          "19/8/1945",
+          "2/9/1945",
+          "30/4/1975",
+          "22/12/1944"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Nghị quyết 144-QĐ/TW ngày 09/5/2024 của Bộ Chính trị quy định nội dung gì?",
+        "luaChon": [
+          "Tiếp tục phát triển kinh tế xã hội định hướng xã hội chủ nghĩa",
+          "Chuẩn mực đạo đức cách mạng của cán bộ, đảng viên trong giai đoạn mới",
+          "Đặc trưng của phẩm chất Bộ đội Cụ Hồ",
+          "Nâng cao đạo đức cách mạng, quét sạch chủ nghĩa cá nhân trong giai đoạn mới"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Vai trò của sĩ quan trong công tác giáo dục chính trị tư tưởng là gì?",
+        "luaChon": [
+          "Chỉ huy chiến đấu",
+          "Bảo vệ vũ khí trang bị",
+          "Giáo dục, định hướng tư tưởng cho bộ đội",
+          "Tổ chức tăng gia sản xuất"
+        ],
+        "dapAn": 2
+      },
+      {
+        "cauHoi": "Đâu là phẩm chất phải có có của một cán bộ trong Quân đội?",
+        "luaChon": [
+          "Tham vọng cá nhân",
+          "Trung thành, tận tụy",
+          "Không tuân thủ mệnh lệnh",
+          "Thiếu kỷ luật"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Sĩ quan cần có thái độ như thế nào trong công việc?",
+        "luaChon": [
+          "Tích cực, trách nhiệm, kỷ luật",
+          "Chờ lệnh cụ thể mới làm",
+          "Làm theo cảm tính",
+          "Tùy hứng và linh hoạt"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Luật sửa đổi, bổ sung một số điều luật của luật Sĩ quan QĐND Việt Nam (2024) quy định hạn tuổi cao nhất của sĩ quan phục vụ tại ngũ theo cấp bậc quân hàm thiếu tá?",
+        "luaChon": [
+          "56 tuổi",
+          "50 tuổi",
+          "54 tuổi",
+          "52 tuổi"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Nội dung nào sau đây không thuộc về công tác huấn luyện chiến đấu?",
+        "luaChon": [
+          "Tổ chức luyện tập chiến thuật",
+          "Rèn luyện thể lực",
+          "Diễn tập chiến đấu",
+          "Xây dựng cơ sở vật chất kỹ thuật"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Sĩ quan nên làm gì khi có sự cố trong đơn vị?",
+        "luaChon": [
+          "Đổ trách nhiệm cho người dưới quyền",
+          "Giữ im lặng để bảo toàn uy tín",
+          "Bình tĩnh xử lý, báo cáo cấp trên",
+          "Tự giải quyết mà không cần báo cáo"
+        ],
+        "dapAn": 2
+      },
+      {
+        "cauHoi": "Phẩm chất Bộ đội Cụ Hồ được thể hiện đầy đủ như thế nào?",
+        "luaChon": [
+          "Trung với Đảng, hiếu với dân, thương yêu đồng chí đồng đội, kỷ luật tự giác nghiêm minh",
+          "Trung với Đảng, hiếu với dân, thương yêu đồng chí đồng đội, kỷ luật tự giác nghiêm minh, thủy chung với bạn bè quốc tế, mưu trí, sáng tạo, dũng cảm, kiên cường",
+          "Trung với Đảng, hiếu với dân, thương yêu đồng chí đồng đội, kỷ luật tự giác nghiêm minh, thủy chung với bạn bè quốc tế",
+          "Trung với Đảng, hiếu với dân, thương yêu đồng chí đồng đội, kỷ luật tự giác nghiêm minh, thủy chung với bạn bè quốc tế, mưu trí, sáng tạo"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Trong công tác quản lý, sĩ quan phải làm gì?",
+        "luaChon": [
+          "Tự do quyết định mọi vấn đề",
+          "Chỉ huy và quản lý bộ đội",
+          "Bảo đảm tài chính cho đơn vị",
+          "Giám sát và hỗ trợ cán bộ cấp trên"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Nội dung nào sau đây phản ánh phẩm chất chính trị của sĩ quan?",
+        "luaChon": [
+          "Nắm vững nghiệp vụ quân sự",
+          "Có tư tưởng chính trị vững vàng",
+          "Giỏi thể thao",
+          "Biết sử dụng vũ khí hiện đại"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Luật sửa đổi, bổ sung một số điều luật của luật Sĩ quan QĐND Việt Nam (2024) quy định hạn tuổi cao nhất của sĩ quan phục vụ tại ngũ theo cấp bậc quân hàm trung tá?",
+        "luaChon": [
+          "50 tuổi",
+          "54 tuổi",
+          "56 tuổi",
+          "52 tuổi"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Chỉ tiêu huấn luyện xác định trong nghị quyết lãnh đạo năm 2025 của Đảng ủy Sư đoàn?",
+        "luaChon": [
+          "98% đạt yêu cầu trong đó có trên 84% khá, giỏi",
+          "100% đạt yêu cầu trong đó có trên 85% khá, giỏi",
+          "100% đạt yêu cầu trong đó có trên 84% khá, giỏi",
+          "100% đạt yêu cầu trong đó có trên 83% khá, giỏi"
+        ],
+        "dapAn": 2
+      }
+    ]
+  }
+]

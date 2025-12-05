@@ -1,4 +1,4 @@
-# Kiểm tra nhận thức chính trị - Trung Đoàn 98
+# Kiểm tra nhận thức chính trị - Trung Đoàn 18
 
 Ứng dụng kiểm tra nhận thức chính trị trực tuyến được chuyển đổi từ HTML/CSS/JavaScript sang Next.js.
 

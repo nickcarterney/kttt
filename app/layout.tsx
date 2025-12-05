@@ -3,7 +3,7 @@ import './globals.scss'
 
 export const metadata: Metadata = {
   title: 'Ứng dụng kiểm tra nhận thức chính trị',
-  description: 'Kiểm tra nhận thức chính trị trực tuyến - Trung Đoàn 98',
+  description: 'Kiểm tra nhận thức chính trị trực tuyến - Trung Đoàn 18',
 }
 
 export default function RootLayout({

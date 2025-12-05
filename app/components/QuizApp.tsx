@@ -1389,7 +1389,7 @@ export default function QuizApp() {
 
   const renderHeader = () => (
     <header className="header-container">
-      <img src="/img/LOGO98.png" alt="Logo Trung Đoàn 98" className="logo" />
+      <img src="/img/LOGO98.png" alt="Logo Trung Đoàn 18" className="logo" />
       <div className="header-content">
         <div className="main-title">
           <div className="title-left">Trung Đoàn 18 - Sư Đoàn 325</div>

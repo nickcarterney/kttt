@@ -90,9 +90,13 @@ export default function MusicPlayer({ className = '' }: MusicPlayerProps) {
     }
   }, [volume])
 
-  // Auto-play first song once when user clicks anywhere except player
+  // Auto-play first song once when user clicks anywhere except player (desktop only)
   useEffect(() => {
     if (hasAutoPlayed || playlist.length === 0) return
+
+    // Only enable on desktop (width > 768px)
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth > 768
+    if (!isDesktop) return
 
     const handleDocumentClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement

@@ -289,5 +289,296 @@
         "dapAn": 2
       }
     ]
+  },
+  {
+    "id": "1765052644838",
+    "username": "34",
+    "doituong": "Siquan-QNCN",
+    "capbac": "56",
+    "chucvu": "57",
+    "donvi": "ẻ",
+    "timestamp": "12/7/2025, 3:24:03 AM",
+    "correct": 0,
+    "total": 25,
+    "score": "0",
+    "answers": [
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      2,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+    ],
+    "questions": [
+      {
+        "cauHoi": "Công việc nào dưới đây là nhiệm vụ thường xuyên của sĩ quan?",
+        "luaChon": [
+          "Đi công tác nước ngoài",
+          "Tham mưu và chỉ huy đơn vị",
+          "Tham gia diễn đàn xã hội",
+          "Nghỉ phép"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Vai trò của sĩ quan trong công tác giáo dục chính trị tư tưởng là gì?",
+        "luaChon": [
+          "Bảo vệ vũ khí trang bị",
+          "Tổ chức tăng gia sản xuất",
+          "Chỉ huy chiến đấu",
+          "Giáo dục, định hướng tư tưởng cho bộ đội"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Sĩ quan cần thể hiện gì khi làm việc với quần chúng?",
+        "luaChon": [
+          "Chỉ huy nghiêm khắc",
+          "Thái độ lạnh lùng, chuyên quyền",
+          "Tận tình, gần gũi, tôn trọng",
+          "Giữ khoảng cách rõ ràng"
+        ],
+        "dapAn": 2
+      },
+      {
+        "cauHoi": "Đâu là phẩm chất phải có có của một cán bộ trong Quân đội?",
+        "luaChon": [
+          "Trung thành, tận tụy",
+          "Tham vọng cá nhân",
+          "Không tuân thủ mệnh lệnh",
+          "Thiếu kỷ luật"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Phẩm chất Bộ đội Cụ Hồ được thể hiện đầy đủ như thế nào?",
+        "luaChon": [
+          "Trung với Đảng, hiếu với dân, thương yêu đồng chí đồng đội, kỷ luật tự giác nghiêm minh, thủy chung với bạn bè quốc tế",
+          "Trung với Đảng, hiếu với dân, thương yêu đồng chí đồng đội, kỷ luật tự giác nghiêm minh, thủy chung với bạn bè quốc tế, mưu trí, sáng tạo, dũng cảm, kiên cường",
+          "Trung với Đảng, hiếu với dân, thương yêu đồng chí đồng đội, kỷ luật tự giác nghiêm minh",
+          "Trung với Đảng, hiếu với dân, thương yêu đồng chí đồng đội, kỷ luật tự giác nghiêm minh, thủy chung với bạn bè quốc tế, mưu trí, sáng tạo"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Đâu là nhiệm vụ quan trọng của sĩ quan trong thời bình?",
+        "luaChon": [
+          "Làm công tác dân vận",
+          "Tham gia sản xuất kinh tế",
+          "Nghỉ ngơi dài hạn",
+          "Huấn luyện và sẵn sàng chiến đấu"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Trong thời đại mới, sĩ quan cần nâng cao điều gì?",
+        "luaChon": [
+          "Khả năng nấu ăn",
+          "Tài năng văn nghệ",
+          "Hiểu biết pháp luật quốc tế",
+          "Trình độ ngoại ngữ, CNTT"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Câu nào sau đây phản ánh đúng trách nhiệm của sĩ quan với cấp dưới?",
+        "luaChon": [
+          "Chỉ cần nắm quân số",
+          "Cho phép nghỉ tùy ý",
+          "Ra lệnh và kiểm tra nghiêm khắc",
+          "Chỉ huy, giáo dục, chăm lo đời sống"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Sĩ quan cần phải rèn luyện điều gì để hoàn thành tốt nhiệm vụ?",
+        "luaChon": [
+          "Quan hệ rộng rãi trong xã hội",
+          "Trình độ chuyên môn và đạo đức cách mạng",
+          "Khả năng kinh doanh",
+          "Sức khỏe và kỹ năng văn nghệ"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Sĩ quan có vai trò gì trong huấn luyện chiến sĩ mới?",
+        "luaChon": [
+          "Chỉ theo dõi, không trực tiếp tham gia",
+          "Phân công cấp dưới toàn quyền",
+          "Trực tiếp chỉ huy và giáo dục chiến sĩ",
+          "Chờ cán bộ chính trị đảm nhiệm"
+        ],
+        "dapAn": 2
+      },
+      {
+        "cauHoi": "Một trong những phẩm chất cốt lõi của sĩ quan là gì?",
+        "luaChon": [
+          "Dũng cảm, trung thực, tận tụy",
+          "Cởi mở trong chia sẻ cá nhân",
+          "Linh hoạt trong đối nội",
+          "Giao tiếp tốt với báo chí"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Quân đội Nhân dân Việt Nam thành lập ngày tháng năm nào?",
+        "luaChon": [
+          "19/8/1945",
+          "22/12/1944",
+          "30/4/1975",
+          "2/9/1945"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Tư cách người sĩ quan được thể hiện qua điều nào sau đây?",
+        "luaChon": [
+          "Phẩm chất đạo đức và phong cách mẫu mực",
+          "Sống kín đáo và ít nói",
+          "Tư duy kinh tế tốt",
+          "Trình độ tin học cao"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Nghị quyết 144-QĐ/TW ngày 09/5/2024 của Bộ Chính trị quy định nội dung gì?",
+        "luaChon": [
+          "Nâng cao đạo đức cách mạng, quét sạch chủ nghĩa cá nhân trong giai đoạn mới",
+          "Đặc trưng của phẩm chất Bộ đội Cụ Hồ",
+          "Tiếp tục phát triển kinh tế xã hội định hướng xã hội chủ nghĩa",
+          "Chuẩn mực đạo đức cách mạng của cán bộ, đảng viên trong giai đoạn mới"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Sĩ quan phải thường xuyên làm gì để nâng cao trình độ chuyên môn?",
+        "luaChon": [
+          "Tham gia lớp tập huấn, tự học",
+          "Nghe nhạc giải trí",
+          "Đi tham quan du lịch",
+          "Làm thêm nghề tay trái"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Nội dung nào sau đây không thuộc về công tác huấn luyện chiến đấu?",
+        "luaChon": [
+          "Rèn luyện thể lực",
+          "Xây dựng cơ sở vật chất kỹ thuật",
+          "Tổ chức luyện tập chiến thuật",
+          "Diễn tập chiến đấu"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Sĩ quan cần làm gì khi nhận mệnh lệnh từ cấp trên?",
+        "luaChon": [
+          "Chấp hành nghiêm túc",
+          "Không báo cáo kết quả",
+          "Tự ý thay đổi mệnh lệnh",
+          "Bỏ qua mệnh lệnh"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Luật sửa đổi, bổ sung một số điều luật của luật Sĩ quan QĐND Việt Nam (2024) quy định hạn tuổi cao nhất của sĩ quan phục vụ tại ngũ theo cấp bậc quân hàm thượng tá?",
+        "luaChon": [
+          "54 tuổi",
+          "56 tuổi",
+          "52 tuổi",
+          "50 tuổi"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Luật sửa đổi, bổ sung một số điều luật của luật Sĩ quan QĐND Việt Nam (2024) quy định hạn tuổi cao nhất của sĩ quan phục vụ tại ngũ theo cấp bậc quân hàm thiếu tá?",
+        "luaChon": [
+          "54 tuổi",
+          "50 tuổi",
+          "52 tuổi",
+          "56 tuổi"
+        ],
+        "dapAn": 2
+      },
+      {
+        "cauHoi": "Chỉ thị nào của QUTW “Về đổi mới, nâng cao chất lượng công tác giáo dục chính trị trong giai đoạn mới?",
+        "luaChon": [
+          "Chỉ thị số 2423-CT/QUTW, ngày 09/11/2023 của Ban Thường vụ Quân ủy Trung ương",
+          "Chỉ thị số 2423-CT/QUTW, ngày 09/11/2022 của Ban Thường vụ Quân ủy Trung ương",
+          "Chỉ thị số 2456-CT/QUTW, ngày 09/11/2023 của Ban Thường vụ Quân ủy Trung ương",
+          "Chỉ thị số 2456-CT/QUTW, ngày 09/12/2024 của Ban Thường vụ Quân ủy Trung ương"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Nội dung nào sau đây phản ánh phẩm chất chính trị của sĩ quan?",
+        "luaChon": [
+          "Nắm vững nghiệp vụ quân sự",
+          "Giỏi thể thao",
+          "Biết sử dụng vũ khí hiện đại",
+          "Có tư tưởng chính trị vững vàng"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Trong công tác quản lý, sĩ quan phải làm gì?",
+        "luaChon": [
+          "Chỉ huy và quản lý bộ đội",
+          "Tự do quyết định mọi vấn đề",
+          "Bảo đảm tài chính cho đơn vị",
+          "Giám sát và hỗ trợ cán bộ cấp trên"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Chữ vàng truyền thống của Trung đoàn 98 là gì?",
+        "luaChon": [
+          "Trung thành, Tự lực, Đoàn kết, Sáng tạo, Chủ động khắc phục khó khăn",
+          "Trung thành, Tự lực, Anh dũng, Đoàn kết, Sáng tạo, Chủ động khắc phục khó khăn",
+          "Trung thành, Kiên quyết, Triệt để, Đoàn kết, Sáng tạo, Chủ động khắc phục khó khăn",
+          "Trung thành, Kiên quyết, Triệt để, Đoàn kết, Anh dũng, Chiến thắng"
+        ],
+        "dapAn": 2
+      },
+      {
+        "cauHoi": "Sĩ quan cần có thái độ như thế nào trong công việc?",
+        "luaChon": [
+          "Tùy hứng và linh hoạt",
+          "Chờ lệnh cụ thể mới làm",
+          "Tích cực, trách nhiệm, kỷ luật",
+          "Làm theo cảm tính"
+        ],
+        "dapAn": 2
+      },
+      {
+        "cauHoi": "Sĩ quan cần học tập lý luận chính trị nhằm mục đích gì?",
+        "luaChon": [
+          "Tăng khả năng làm việc cá nhân",
+          "Thay đổi tư tưởng chiến sĩ",
+          "Hiểu rõ quan điểm của Đảng, Nhà nước",
+          "Tránh nhiệm vụ phức tạp"
+        ],
+        "dapAn": 2
+      }
+    ]
   }
 ]

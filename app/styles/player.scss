@@ -1,0 +1,252 @@
+// Music Player Styles
+.music-player {
+  position: fixed;
+  left: 2rem;
+  top: 24rem;
+  width: 32rem;
+  max-height: calc(100vh - 24rem - 2rem);
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 1.2rem;
+  box-shadow: 0 0.4rem 2rem rgba(0, 0, 0, 0.15);
+  padding: 1.5rem;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+
+  &.minimized {
+    width: 20rem;
+    padding: 1rem;
+
+    .music-player-header {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.music-player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .minimize-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0;
+    width: 2.4rem;
+    height: 2.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.song-info {
+  margin-bottom: 1rem;
+
+  .song-title {
+    font-size: 1.2rem;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+  }
+
+  .song-counter {
+    font-size: 1rem;
+    color: #999;
+    margin-top: 0.2rem;
+  }
+}
+
+.progress-container {
+  margin-bottom: 1rem;
+
+  .progress-bar {
+    width: 100%;
+    height: 0.4rem;
+    border-radius: 0.2rem;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .time-display {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
+    color: #999;
+    margin-top: 0.2rem;
+  }
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+
+  .control-btn {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 50%;
+    width: 3.2rem;
+    min-width: 3.2rem;
+    height: 3.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    aspect-ratio: 1;
+    line-height: 1;
+
+    &.play-pause-btn {
+      background: #a31d1d;
+      color: white;
+      width: 4rem;
+      min-width: 4rem;
+      height: 4rem;
+      font-size: 1.8rem;
+    }
+  }
+
+  .volume-control {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0.5rem;
+
+    .volume-icon {
+      font-size: 1.2rem;
+    }
+
+    .volume-slider {
+      flex: 1;
+      height: 0.4rem;
+      border-radius: 0.2rem;
+      outline: none;
+      cursor: pointer;
+      max-width: 9.6rem;
+    }
+
+    .volume-percent {
+      font-size: 1rem;
+      color: #999;
+      min-width: 3rem;
+    }
+  }
+}
+
+.playlist-indicator {
+  font-size: 1rem;
+  color: #999;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.playlist-container {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  max-height: 30rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  .playlist-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.8rem;
+    color: #333;
+  }
+
+  .playlist {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
+
+.song-button {
+  background: #f8f9fa;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.6rem;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    background: #e9ecef;
+  }
+
+  &.current {
+    background: #a31d1d;
+    color: white;
+    border: none;
+  }
+
+  .song-number {
+    min-width: 2rem;
+    font-size: 1rem;
+  }
+
+  .song-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Responsive styles
+@media screen and (max-width: 768px) {
+  .music-player {
+    left: 1rem;
+    top: 19.2rem;
+    width: 28rem;
+
+    &.minimized {
+      width: 18rem;
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .music-player {
+    left: 0.5rem;
+    top: 16rem;
+    width: 26rem;
+
+    &.minimized {
+      width: 16rem;
+    }
+  }
+}
+
+
+// Responsive styles
+@media screen and (max-width: 1800px) {
+    .music-player {
+        display: none;
+    }
+}

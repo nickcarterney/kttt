@@ -56,3 +56,36 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function DELETE(request: NextRequest) {
+  try {
+    ensureFileExists()
+    const { id, deleteAll } = await request.json()
+
+    // Read existing results
+    const fileContents = fs.readFileSync(testResultsFilePath, 'utf8')
+    const results = JSON.parse(fileContents)
+
+    if (deleteAll) {
+      // Delete all results
+      fs.writeFileSync(testResultsFilePath, JSON.stringify([], null, 2))
+      return NextResponse.json({ success: true, deletedCount: results.length })
+    } else {
+      // Delete single result
+      if (!id) {
+        return NextResponse.json({ error: 'ID is required' }, { status: 400 })
+      }
+
+      // Find and remove the result
+      const filteredResults = results.filter((result: any) => result.id !== id)
+
+      // Write back to file
+      fs.writeFileSync(testResultsFilePath, JSON.stringify(filteredResults, null, 2))
+
+      return NextResponse.json({ success: true })
+    }
+  } catch (error) {
+    console.error('Error deleting test result:', error)
+    return NextResponse.json({ error: 'Failed to delete test result' }, { status: 500 })
+  }
+}
+

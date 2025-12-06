@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { jsPDF } from 'jspdf'
+import MusicPlayer from './MusicPlayer'
 
 interface Question {
   cauHoi: string
@@ -259,6 +260,30 @@ export default function QuizApp() {
     } catch (error) {
       console.error('Error saving test result to server:', error)
       alert('Lỗi khi lưu kết quả bài thi vào server.')
+    }
+  }
+
+  const deleteTestResultFromServer = async (id?: string, deleteAll = false) => {
+    try {
+      const response = await fetch('/api/test-results', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(deleteAll ? { deleteAll: true } : { id }),
+      })
+
+      if (response.ok) {
+        // Reload all results
+        await loadAllTestResults()
+        return true
+      } else {
+        throw new Error('Failed to delete test result')
+      }
+    } catch (error) {
+      console.error('Error deleting test result from server:', error)
+      alert(`Lỗi khi ${deleteAll ? 'xóa tất cả' : 'xóa'} kết quả bài thi từ server.`)
+      return false
     }
   }
 
@@ -783,12 +808,14 @@ export default function QuizApp() {
         </div>
       )}
 
-      <div style={{ textAlign: 'right', marginBottom: '20px' }}>
-        <button onClick={goBackToMain} style={{ backgroundColor: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}>
-          🔙 Quay lại
-        </button>
-        <button onClick={logout} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
-          🚪 Đăng xuất
+      <div className="quiz-nav-buttons">
+        {!showTestModeSelection && (
+          <button onClick={goBackToMain} className="back-btn">
+            Quay lại
+          </button>
+        )}
+        <button onClick={logout} className="logout-btn">
+          Đăng xuất
         </button>
       </div>
 
@@ -945,9 +972,9 @@ export default function QuizApp() {
     <div id="settings-screen">
       <h1>QUẢN LÝ BỘ ĐỀ</h1>
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <button onClick={showAddQuestionForm}>➕ Thêm câu hỏi</button>
-        <button onClick={showAdminResults}>📊 Xem kết quả bài thi</button>
-        <button onClick={goBackToMain}>🔙 Quay lại bài thi</button>
+        <button onClick={showAddQuestionForm} className="back-btn">Thêm câu hỏi</button>
+        <button onClick={showAdminResults} className="back-btn">Xem kết quả bài thi</button>
+        <button onClick={logout} className="logout-btn">Đăng xuất</button>
       </div>
 
       <div id="stats">
@@ -1084,14 +1111,16 @@ export default function QuizApp() {
       {isAdmin && (
         <button onClick={clearHistory}>Xóa lịch sử thi</button>
       )}
-      <button onClick={goBackToMain}>🔙 Quay lại bài thi</button>
+      <button onClick={goBackToMain}>Quay lại bài thi</button>
     </div>
   )
 
   const renderReviewScreen = () => (
     <div id="review-screen">
       <h1>ÔN TẬP CÂU HỎI</h1>
-      <button onClick={goBackToMain}>🔙 Quay lại bài thi</button>
+      <div className="quiz-nav-buttons">
+        <button className="back-btn" onClick={goBackToMain}>Quay lại bài thi</button>
+      </div>
       <div id="review-questions">
         {questions[currentDoituong]?.map((q, index) => (
           <div key={index} className="question-block">
@@ -1111,11 +1140,10 @@ export default function QuizApp() {
 
   const renderAdminResultsScreen = () => {
     return (
-      <div id="admin-results-screen">
+      <div id="admin-results-screen" className="container">
         <h1>QUẢN LÝ KẾT QUẢ BÀI THI</h1>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          <button onClick={showSettings}>⚙️ Quản lý bộ đề</button>
-          <button onClick={goBackToMain}>🔙 Quay lại bài thi</button>
+          <button onClick={showSettings} className="back-btn">Quản lý bộ đề</button>
         </div>
 
         {/* Danh sách kết quả */}
@@ -1171,20 +1199,24 @@ export default function QuizApp() {
                       </td>
                       <td style={{ padding: '12px', fontSize: '14px' }}>{result.timestamp}</td>
                       <td style={{ padding: '12px', textAlign: 'center' }}>
-                        <button
-                          onClick={() => viewTestResultDetails(result)}
-                          style={{
-                            backgroundColor: '#2196f3',
-                            color: 'white',
-                            border: 'none',
-                            padding: '6px 12px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '14px'
-                          }}
-                        >
-                          Xem chi tiết
-                        </button>
+                        <div className="admin-actions">
+                          <button
+                            className="edit-btn"
+                            onClick={() => viewTestResultDetails(result)}
+                          >
+                          Xem
+                          </button>
+                          <button
+                            className="delete-btn"
+                            onClick={() => {
+                              if (confirm(`Bạn có chắc chắn muốn xóa kết quả bài thi của "${result.username}" (${result.score}/10) không?`)) {
+                                deleteTestResultFromServer(result.id || '')
+                              }
+                            }}
+                          >
+                            Xóa
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1215,7 +1247,7 @@ export default function QuizApp() {
             background: 'white',
             borderRadius: '0.5rem',
             padding: 0,
-            maxWidth: '50rem',
+            maxWidth: '100rem',
             width: '90%',
             maxHeight: '90vh',
             overflowY: 'auto',
@@ -1241,7 +1273,7 @@ export default function QuizApp() {
                   marginBottom: '20px',
                   border: '1px solid #dee2e6'
                 }}>
-                  <h3 style={{ marginTop: 0, marginBottom: '15px' }}>📊 Thống kê tổng quát</h3>
+                  <h3 style={{ marginTop: 0, marginBottom: '15px' }}>Thống kê tổng quát</h3>
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
@@ -1389,7 +1421,7 @@ export default function QuizApp() {
 
   const renderHeader = () => (
     <header className="header-container">
-      <img src="/img/LOGO98.png" alt="Logo Trung Đoàn 18" className="logo" />
+      <img src="/img/trungdoan18.webp" alt="Logo Trung Đoàn 18" className="logo" />
       <div className="header-content">
         <div className="main-title">
           <div className="title-left">Trung Đoàn 18 - Sư Đoàn 325</div>
@@ -1436,6 +1468,7 @@ export default function QuizApp() {
   return (
     <>
       {renderHeader()}
+      <MusicPlayer />
       {currentScreen === 'login' && renderLoginScreen()}
       {currentScreen === 'quiz' && renderQuizScreen()}
       {currentScreen === 'settings' && renderSettingsScreen()}

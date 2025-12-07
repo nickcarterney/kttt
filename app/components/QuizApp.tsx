@@ -139,7 +139,8 @@ export default function QuizApp() {
           loadQuestions(),
           loadTestHistory(),
           loadLoginData(),
-          loadSettings()
+          loadSettings(),
+          restoreAdminSession()
         ])
       } finally {
         setIsLoading(false)
@@ -407,6 +408,14 @@ export default function QuizApp() {
         setUsername(adminForm.username)
         setCurrentDoituong('Admin')
         setCurrentScreen('settings')
+
+        // Save admin session to localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('adminLoggedIn', 'true')
+          localStorage.setItem('adminUsername', adminForm.username)
+          localStorage.setItem('adminLoginTime', Date.now().toString())
+        }
+
         console.log('✅ Admin login successful')
       } else {
         alert('Tên admin hoặc mật khẩu không đúng!')
@@ -754,12 +763,74 @@ export default function QuizApp() {
     setCurrentScreen('review')
   }
 
+  // Restore admin session from localStorage
+  const restoreAdminSession = async () => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const adminLoggedIn = localStorage.getItem('adminLoggedIn')
+      const adminUsername = localStorage.getItem('adminUsername')
+      const adminLoginTime = localStorage.getItem('adminLoginTime')
+
+      // Check if admin session exists and is not too old (24 hours)
+      if (adminLoggedIn === 'true' && adminUsername && adminLoginTime) {
+        const loginTime = parseInt(adminLoginTime, 10)
+        const now = Date.now()
+        const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60)
+
+        // Only restore if login was within 24 hours
+        if (hoursSinceLogin < 24) {
+          // Set a timeout to auto-logout after remaining session time
+          const remainingMs = (24 - hoursSinceLogin) * 60 * 60 * 1000
+          setTimeout(() => {
+            console.log('⏰ Admin session expired, auto-logging out')
+            logout()
+            alert('Phiên đăng nhập admin đã hết hạn. Vui lòng đăng nhập lại.')
+          }, remainingMs)
+          console.log('🔄 Restoring admin session from localStorage')
+
+          // Verify admin credentials are still valid
+          const response = await fetch('/api/settings')
+          if (response.ok) {
+            const settings = await response.json()
+
+            // Double-check credentials match
+            if (adminUsername === settings.adminUsername) {
+              setIsAdmin(true)
+              setUsername(adminUsername)
+              setCurrentDoituong('Admin')
+              setCurrentScreen('settings')
+              console.log('✅ Admin session restored successfully')
+              return
+            }
+          }
+        }
+
+        // If verification fails or session is too old, clear the session
+        console.log('⚠️ Admin session expired or invalid, clearing...')
+        localStorage.removeItem('adminLoggedIn')
+        localStorage.removeItem('adminUsername')
+        localStorage.removeItem('adminLoginTime')
+      }
+    } catch (error) {
+      console.error('❌ Error restoring admin session:', error)
+      // Clear potentially corrupted session data
+      localStorage.removeItem('adminLoggedIn')
+      localStorage.removeItem('adminUsername')
+      localStorage.removeItem('adminLoginTime')
+    }
+  }
+
   const logout = () => {
     // Clear all stored data
     if (typeof window !== 'undefined') {
       localStorage.removeItem('loginData')
       localStorage.removeItem('timeLeft')
       localStorage.removeItem('startTime')
+      // Clear admin session
+      localStorage.removeItem('adminLoggedIn')
+      localStorage.removeItem('adminUsername')
+      localStorage.removeItem('adminLoginTime')
     }
 
     // Reset all state
@@ -1072,6 +1143,19 @@ export default function QuizApp() {
         <button onClick={showAdminResults} className="back-btn">Xem kết quả bài thi</button>
         <button onClick={showAdminPasswordDialog} className="back-btn">Thay đổi mật khẩu admin</button>
         <button onClick={logout} className="logout-btn">Đăng xuất</button>
+      </div>
+
+      {/* Admin session info */}
+      <div style={{
+        backgroundColor: '#e8f5e8',
+        border: '1px solid #c3e6c3',
+        borderRadius: '4px',
+        padding: '8px 12px',
+        marginBottom: '20px',
+        fontSize: '14px',
+        color: '#2d5a2d'
+      }}>
+        <strong>🔐 Admin:</strong> {username} | <strong>Trạng thái:</strong> Đã đăng nhập | <strong>Session:</strong> Tự động hết hạn sau 24 giờ
       </div>
 
       {/* Cấu hình số lượng câu hỏi */}

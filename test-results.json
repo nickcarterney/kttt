@@ -580,5 +580,131 @@
         "dapAn": 2
       }
     ]
+  },
+  {
+    "id": "1765121581392",
+    "username": "noobeeb",
+    "doituong": "Siquan-QNCN",
+    "capbac": "65",
+    "chucvu": "768",
+    "donvi": "e",
+    "timestamp": "12/7/2025, 10:33:01 PM",
+    "correct": 3,
+    "total": 10,
+    "score": "3",
+    "answers": [
+      2,
+      2,
+      0,
+      1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      2
+    ],
+    "questions": [
+      {
+        "cauHoi": "Nghị quyết số 57-NQ/TW ngày 22/12/2024 của Bộ Chính trị đề cập vấn đề gì?",
+        "luaChon": [
+          "Phẩm chất cán bộ, đảng viên trong giai đoạn mới",
+          "Đột phá phát triển khoa học, công nghệ, đổi mới sáng tạo và chuyển đổi số quốc gia",
+          "Nâng cao chất lượng kiểm tra, giám sát Đảng",
+          "Tiếp tục thực hiện công cuộc xây dựng nông thôn mới"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Đâu là một yêu cầu bắt buộc của sĩ quan trong tác phong chỉ huy?",
+        "luaChon": [
+          "Chấp hành nghiêm điều lệnh quân đội",
+          "Tự do sáng tạo trong mọi việc",
+          "Cho phép linh động quy định",
+          "Dễ tính với mọi tình huống"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Trong thời đại mới, sĩ quan cần nâng cao điều gì?",
+        "luaChon": [
+          "Tài năng văn nghệ",
+          "Khả năng nấu ăn",
+          "Hiểu biết pháp luật quốc tế",
+          "Trình độ ngoại ngữ, CNTT"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Nội dung nào sau đây phản ánh phẩm chất chính trị của sĩ quan?",
+        "luaChon": [
+          "Giỏi thể thao",
+          "Có tư tưởng chính trị vững vàng",
+          "Biết sử dụng vũ khí hiện đại",
+          "Nắm vững nghiệp vụ quân sự"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Chữ vàng truyền thống của Lực lượng vũ trang Quân khu 2 là gì?",
+        "luaChon": [
+          "Trung thành, Tự lực, Đoàn kết, Sáng tạo, Chiến thắng",
+          "Trung thành, Tự lực, Đoàn kết, Anh dũng, Chiến thắng",
+          "Trung thành, Kiên quyết, Triệt để, Đoàn kết, Anh dũng, Chiến thắng",
+          "Trung thành, Tự lực, Anh dũng, Đoàn kết, Chủ động khắc phục khó khăn"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Đâu là nhiệm vụ quan trọng của sĩ quan trong thời bình?",
+        "luaChon": [
+          "Huấn luyện và sẵn sàng chiến đấu",
+          "Tham gia sản xuất kinh tế",
+          "Nghỉ ngơi dài hạn",
+          "Làm công tác dân vận"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Sĩ quan phải thường xuyên làm gì để nâng cao trình độ chuyên môn?",
+        "luaChon": [
+          "Làm thêm nghề tay trái",
+          "Tham gia lớp tập huấn, tự học",
+          "Nghe nhạc giải trí",
+          "Đi tham quan du lịch"
+        ],
+        "dapAn": 1
+      },
+      {
+        "cauHoi": "Sĩ quan cần thể hiện gì khi làm việc với quần chúng?",
+        "luaChon": [
+          "Tận tình, gần gũi, tôn trọng",
+          "Giữ khoảng cách rõ ràng",
+          "Chỉ huy nghiêm khắc",
+          "Thái độ lạnh lùng, chuyên quyền"
+        ],
+        "dapAn": 0
+      },
+      {
+        "cauHoi": "Khái niệm về Sĩ quan trong Quân đội Nhân dân Việt Nam?",
+        "luaChon": [
+          "Là cán bộ trong quân đội",
+          "Là cán bộ của Đảng cộng sản Việt Nam và Nhà nước Cộng hòa xã hội chủ nghĩa Việt Nam",
+          "Là cán bộ hoạt động trong lĩnh vực quân sự, được Nhà nước phong quân hàm cấp úy, cấp tá và cấp tướng",
+          "Là cán bộ của Đảng cộng sản Việt Nam và Nhà nước Cộng hòa xã hội chủ nghĩa Việt Nam, hoạt động trong lĩnh vực quân sự, được Nhà nước phong quân hàm cấp úy, cấp tá và cấp tướng"
+        ],
+        "dapAn": 3
+      },
+      {
+        "cauHoi": "Luật sửa đổi, bổ sung một số điều luật của luật Sĩ quan QĐND Việt Nam (2024) quy định hạn tuổi cao nhất của sĩ quan phục vụ tại ngũ theo cấp bậc quân hàm thượng tá?",
+        "luaChon": [
+          "56 tuổi",
+          "50 tuổi",
+          "54 tuổi",
+          "52 tuổi"
+        ],
+        "dapAn": 0
+      }
+    ]
   }
 ]

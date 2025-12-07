@@ -9,6 +9,9 @@
 - **Thi thật/Thi thử**: Chế độ thi với thời gian giới hạn
 - **Ôn tập câu hỏi**: Xem tất cả câu hỏi và đáp án đúng
 - **Quản lý câu hỏi**: Thêm, sửa, xóa câu hỏi qua giao diện admin
+- **Quản lý kết quả thi**: Xem và xóa kết quả bài thi của học viên
+- **Cấu hình bài thi**: Thiết lập số câu hỏi mỗi bài thi
+- **Quản lý tài khoản**: Thay đổi tên đăng nhập và mật khẩu admin
 - **Lịch sử thi**: Xem kết quả các lần thi trước
 - **Xuất PDF**: Xuất kết quả thi ra file PDF
 
@@ -24,6 +27,8 @@
 │   └── page.tsx                  # Trang chính
 ├── public/img/                   # Hình ảnh
 ├── questions.json                # File dữ liệu câu hỏi
+├── settings.json                 # File cấu hình ứng dụng (số câu hỏi, admin credentials)
+├── test-results.json             # File lưu trữ kết quả bài thi
 └── package.json                  # Dependencies
 ```
 
@@ -52,8 +57,13 @@ npm start
 
 ## Tài khoản Admin
 
+**Thông tin đăng nhập mặc định:**
 - **Username**: admin
 - **Password**: admin123
+
+**Admin có thể thay đổi:**
+- Tên đăng nhập và mật khẩu trong phần "Quản lý bộ đề" → "Quản lý tài khoản Admin"
+- Thông tin đăng nhập được lưu trữ trong `settings.json` và được sử dụng qua API
 
 ## Cấu trúc dữ liệu câu hỏi
 
@@ -80,6 +90,12 @@ Trả về tất cả câu hỏi từ file `questions.json`
 
 ### POST /api/questions
 Cập nhật dữ liệu câu hỏi vào file `questions.json`
+
+### GET /api/settings
+Lấy cấu hình ứng dụng từ file `settings.json` (bao gồm thông tin đăng nhập admin)
+
+### POST /api/settings
+Cập nhật cấu hình ứng dụng vào file `settings.json`
 
 **Request Body:**
 ```json

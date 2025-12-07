@@ -49,6 +49,13 @@ export default function QuizApp() {
   const [chucvu, setChucvu] = useState('')
   const [donvi, setDonvi] = useState('')
   const [isPracticeMode, setIsPracticeMode] = useState(false)
+  const [settings, setSettings] = useState({
+    defaultQuestionsCount: 25,
+    examTime: 1200,
+    adminUsername: 'admin',
+    adminPassword: 'admin123'
+  })
+  const [isAdminPasswordDialogVisible, setIsAdminPasswordDialogVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   // UI state
@@ -131,7 +138,8 @@ export default function QuizApp() {
         await Promise.all([
           loadQuestions(),
           loadTestHistory(),
-          loadLoginData()
+          loadLoginData(),
+          loadSettings()
         ])
       } finally {
         setIsLoading(false)
@@ -239,6 +247,60 @@ export default function QuizApp() {
     }
   }
 
+  const loadSettings = async () => {
+    try {
+      const response = await fetch('/api/settings')
+      if (response.ok) {
+        const data = await response.json()
+        setSettings(data)
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error)
+      // Fallback to localStorage if API fails (for Vercel compatibility)
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('defaultQuestionsCount')
+        if (saved) {
+          const count = parseInt(saved, 10)
+          if (count >= 1 && count <= 100) {
+            setSettings(prev => ({ ...prev, defaultQuestionsCount: count }))
+          }
+        }
+      }
+    }
+  }
+
+  const saveSettings = async (newSettings: typeof settings) => {
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newSettings),
+      })
+
+      if (response.ok) {
+        setSettings(newSettings)
+      } else {
+        throw new Error('Failed to save settings')
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      // Fallback to localStorage (for Vercel compatibility)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('defaultQuestionsCount', newSettings.defaultQuestionsCount.toString())
+        setSettings(newSettings)
+      }
+    }
+  }
+
+  const saveDefaultQuestionsCount = (count: number) => {
+    // Đảm bảo count trong khoảng 1-100
+    const validCount = Math.max(1, Math.min(100, count))
+    const newSettings = { ...settings, defaultQuestionsCount: validCount }
+    saveSettings(newSettings)
+  }
+
   const saveTestResultToServer = async (testResult: TestResult) => {
     try {
       const response = await fetch('/api/test-results', {
@@ -323,19 +385,36 @@ export default function QuizApp() {
     setShowTestModeSelection(true)
   }
 
-  const handleAdminLogin = () => {
+  const handleAdminLogin = async () => {
     if (!adminForm.username || !adminForm.password) {
       alert('Vui lòng nhập đầy đủ tên admin và mật khẩu!')
       return
     }
 
-    if (adminForm.username === 'admin' && adminForm.password === 'admin123') {
-      setIsAdmin(true)
-      setUsername(adminForm.username)
-      setCurrentDoituong('Admin')
-      setCurrentScreen('settings')
-    } else {
-      alert('Tên admin hoặc mật khẩu không đúng!')
+    try {
+      // Fetch admin credentials from settings via API
+      const response = await fetch('/api/settings')
+      if (!response.ok) {
+        alert('Không thể kết nối đến máy chủ. Vui lòng thử lại!')
+        return
+      }
+
+      const settings = await response.json()
+
+      // Compare with admin credentials from settings
+      if (adminForm.username === settings.adminUsername && adminForm.password === settings.adminPassword) {
+        setIsAdmin(true)
+        setUsername(adminForm.username)
+        setCurrentDoituong('Admin')
+        setCurrentScreen('settings')
+        console.log('✅ Admin login successful')
+      } else {
+        alert('Tên admin hoặc mật khẩu không đúng!')
+        console.log('❌ Admin login failed - invalid credentials')
+      }
+    } catch (error) {
+      console.error('❌ Error during admin login:', error)
+      alert('Lỗi khi đăng nhập. Vui lòng thử lại!')
     }
   }
 
@@ -403,10 +482,24 @@ export default function QuizApp() {
       return
     }
 
+    // Đảm bảo số lượng câu hỏi không vượt quá số câu hỏi có sẵn
+    const availableQuestions = questions[doituongToUse].length
+    const questionsToSelect = Math.min(settings.defaultQuestionsCount, availableQuestions)
+
+    if (questionsToSelect < settings.defaultQuestionsCount && isAdmin) {
+      alert(`Chỉ có ${availableQuestions} câu hỏi cho đối tượng này. Sẽ hiển thị tất cả câu hỏi có sẵn.`)
+    }
+
+    // Đảm bảo có ít nhất 1 câu hỏi
+    if (questionsToSelect === 0) {
+      alert('Không có câu hỏi nào cho đối tượng này!')
+      return
+    }
+
     let tempQuestions = [...questions[doituongToUse]]
     shuffleArray(tempQuestions)
 
-    const newSelectedQuestions = tempQuestions.slice(0, 25).map((q) => {
+    const newSelectedQuestions = tempQuestions.slice(0, questionsToSelect).map((q) => {
       let clonedQuestion = {
         cauHoi: q.cauHoi,
         luaChon: [] as string[],
@@ -519,6 +612,9 @@ export default function QuizApp() {
     loadAllTestResults()
   }
 
+  const showAdminPasswordDialog = () => setIsAdminPasswordDialogVisible(true)
+  const hideAdminPasswordDialog = () => setIsAdminPasswordDialogVisible(false)
+
   const viewTestResultDetails = (result: TestResult) => {
     setSelectedTestResult(result)
   }
@@ -597,8 +693,7 @@ export default function QuizApp() {
   }
 
   const viewTestDetails = (index: number) => {
-    // This would show detailed results - for now just log
-    console.log('Viewing test details:', testHistory[index])
+    setSelectedTestResult(testHistory[index])
   }
 
   const exportToPDF = (index: number) => {
@@ -971,11 +1066,53 @@ export default function QuizApp() {
   const renderSettingsScreen = () => (
     <div id="settings-screen">
       <h1>QUẢN LÝ BỘ ĐỀ</h1>
+      <br></br>
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
         <button onClick={showAddQuestionForm} className="back-btn">Thêm câu hỏi</button>
         <button onClick={showAdminResults} className="back-btn">Xem kết quả bài thi</button>
+        <button onClick={showAdminPasswordDialog} className="back-btn">Thay đổi mật khẩu admin</button>
         <button onClick={logout} className="logout-btn">Đăng xuất</button>
       </div>
+
+      {/* Cấu hình số lượng câu hỏi */}
+      <div style={{
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #dee2e6',
+        borderRadius: '8px',
+        padding: '15px',
+        marginBottom: '20px'
+      }}>
+        <h3 style={{ marginTop: 0, marginBottom: '10px', color: '#495057' }}>⚙️ Cấu hình bài thi</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <label htmlFor="questionsCount" style={{ fontWeight: 'bold' }}>
+            Số câu hỏi mỗi bài thi:
+          </label>
+          <input
+            id="questionsCount"
+            type="number"
+            min="1"
+            max="100"
+            value={settings.defaultQuestionsCount}
+            onChange={(e) => {
+              const value = parseInt(e.target.value, 10)
+              if (!isNaN(value)) {
+                saveDefaultQuestionsCount(value)
+              }
+            }}
+            style={{
+              padding: '5px 8px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              width: '80px',
+              textAlign: 'center'
+            }}
+          />
+          <span style={{ color: '#6c757d', fontSize: '14px' }}>
+            (Tối thiểu: 1, Tối đa: 100)
+          </span>
+        </div>
+      </div>
+
 
       <div id="stats">
         Thống kê bộ đề<br/>
@@ -1085,12 +1222,204 @@ export default function QuizApp() {
           </dialog>
         </div>
       )}
+
+      {/* Admin Password Change Dialog */}
+      {isAdminPasswordDialogVisible && (
+        <div className="dialog-overlay" onClick={hideAdminPasswordDialog}>
+          <dialog
+            id="adminPasswordDialog"
+            open
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                hideAdminPasswordDialog()
+              }
+            }}
+          >
+            <div className="dialog-header">
+              <h2>Thay đổi mật khẩu Admin</h2>
+              <button className="dialog-close" onClick={hideAdminPasswordDialog} aria-label="Đóng">×</button>
+            </div>
+            <div className="dialog-content">
+              <div style={{ marginBottom: '15px', fontSize: '14px', color: '#666' }}>
+                💡 Để trống các trường không muốn thay đổi. Mật khẩu phải có ít nhất 6 ký tự.
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div>
+                  <label htmlFor="dialogCurrentUsername" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                    Tên đăng nhập hiện tại:
+                  </label>
+                  <input
+                    id="dialogCurrentUsername"
+                    type="text"
+                    value={settings.adminUsername}
+                    readOnly
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      backgroundColor: '#f8f9fa'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="dialogNewUsername" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                    Tên đăng nhập mới (tùy chọn):
+                  </label>
+                  <input
+                    id="dialogNewUsername"
+                    type="text"
+                    placeholder="Để trống nếu không đổi"
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="dialogCurrentPassword" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                    Mật khẩu hiện tại:
+                  </label>
+                  <input
+                    id="dialogCurrentPassword"
+                    type="password"
+                    placeholder="Nhập mật khẩu hiện tại"
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="dialogNewPassword" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                    Mật khẩu mới:
+                  </label>
+                  <input
+                    id="dialogNewPassword"
+                    type="password"
+                    placeholder="Nhập mật khẩu mới"
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="dialogConfirmPassword" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                    Xác nhận mật khẩu mới:
+                  </label>
+                  <input
+                    id="dialogConfirmPassword"
+                    type="password"
+                    placeholder="Nhập lại mật khẩu mới"
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="dialog-footer">
+              <button onClick={() => {
+                const newUsername = (document.getElementById('dialogNewUsername') as HTMLInputElement)?.value?.trim()
+                const currentPassword = (document.getElementById('dialogCurrentPassword') as HTMLInputElement)?.value
+                const newPassword = (document.getElementById('dialogNewPassword') as HTMLInputElement)?.value
+                const confirmPassword = (document.getElementById('dialogConfirmPassword') as HTMLInputElement)?.value
+
+                if (!currentPassword) {
+                  alert('Vui lòng nhập mật khẩu hiện tại!')
+                  return
+                }
+
+                if (currentPassword !== settings.adminPassword) {
+                  alert('Mật khẩu hiện tại không đúng!')
+                  return
+                }
+
+                // Check if any changes are being made
+                if (!newUsername && !newPassword && !confirmPassword) {
+                  alert('Vui lòng nhập thông tin cần thay đổi!')
+                  return
+                }
+
+                let newSettings = { ...settings }
+
+                // Update username if provided
+                if (newUsername) {
+                  if (newUsername.length < 3) {
+                    alert('Tên đăng nhập phải có ít nhất 3 ký tự!')
+                    return
+                  }
+                  newSettings.adminUsername = newUsername
+                }
+
+                // Update password if provided
+                if (newPassword || confirmPassword) {
+                  if (!newPassword || !confirmPassword) {
+                    alert('Vui lòng nhập đầy đủ mật khẩu mới và xác nhận!')
+                    return
+                  }
+
+                  if (newPassword !== confirmPassword) {
+                    alert('Mật khẩu mới và xác nhận không khớp!')
+                    return
+                  }
+
+                  if (newPassword.length < 6) {
+                    alert('Mật khẩu mới phải có ít nhất 6 ký tự!')
+                    return
+                  }
+
+                  newSettings.adminPassword = newPassword
+                }
+
+                // Save settings
+                saveSettings(newSettings)
+
+                // Clear form and close dialog
+                ;(document.getElementById('dialogNewUsername') as HTMLInputElement).value = ''
+                ;(document.getElementById('dialogCurrentPassword') as HTMLInputElement).value = ''
+                ;(document.getElementById('dialogNewPassword') as HTMLInputElement).value = ''
+                ;(document.getElementById('dialogConfirmPassword') as HTMLInputElement).value = ''
+
+                hideAdminPasswordDialog()
+                alert('Thông tin admin đã được cập nhật thành công!')
+              }}>💾 Lưu</button>
+              <button onClick={hideAdminPasswordDialog}>❌ Hủy</button>
+            </div>
+          </dialog>
+        </div>
+      )}
     </div>
   )
 
   const renderHistoryScreen = () => (
     <div id="history-screen">
       <h1>LỊCH SỬ THI</h1>
+      <br></br>
+      <div className="quiz-nav-buttons">
+        <button className="back-btn" onClick={goBackToMain}>Quay lại bài thi</button>
+      </div>
       <div id="history-list">
         {testHistory.map((result, index) => (
           <div key={index} className="history-item">
@@ -1104,14 +1433,9 @@ export default function QuizApp() {
             <p>Kết quả: {result.correct}/{result.total} câu</p>
             <p>Điểm: {result.score}/10</p>
             <button onClick={() => viewTestDetails(index)}>Xem chi tiết</button>
-            <button onClick={() => exportToPDF(index)}>Xuất PDF</button>
           </div>
         ))}
       </div>
-      {isAdmin && (
-        <button onClick={clearHistory}>Xóa lịch sử thi</button>
-      )}
-      <button onClick={goBackToMain}>Quay lại bài thi</button>
     </div>
   )
 
@@ -1135,6 +1459,201 @@ export default function QuizApp() {
           </div>
         ))}
       </div>
+
+      {/* Test Details Dialog */}
+      {selectedTestResult && (
+        <div className="dialog-overlay" onClick={closeTestResultDetails}>
+          <dialog
+            id="testDetailsDialog"
+            open
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                closeTestResultDetails()
+              }
+            }}
+            style={{
+              maxWidth: '90vw',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 0.25rem 0.9375rem rgba(0, 0, 0, 0.3)',
+              border: 'none'
+            }}
+          >
+            <div className="dialog-header">
+              <h2>Chi tiết bài thi</h2>
+              <button className="dialog-close" onClick={closeTestResultDetails} aria-label="Đóng">×</button>
+            </div>
+            <div className="dialog-content" style={{ padding: '1.25rem' }}>
+              {/* Thống kê tổng quát */}
+              {(() => {
+                const incorrect = selectedTestResult.total - selectedTestResult.correct
+                const correctPercentage = ((selectedTestResult.correct / selectedTestResult.total) * 100).toFixed(1)
+
+                return (
+                  <div style={{
+                    backgroundColor: '#f8f9fa',
+                    padding: '20px',
+                    borderRadius: '8px',
+                    marginBottom: '20px',
+                    border: '1px solid #dee2e6'
+                  }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '15px' }}>Thống kê tổng quát</h3>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                      gap: '15px'
+                    }}>
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '15px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        border: '1px solid #dee2e6'
+                      }}>
+                        <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>
+                          {selectedTestResult.correct}
+                        </div>
+                        <div style={{ color: '#6c757d', fontSize: '14px' }}>Đúng</div>
+                      </div>
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '15px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        border: '1px solid #dee2e6'
+                      }}>
+                        <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc3545' }}>
+                          {incorrect}
+                        </div>
+                        <div style={{ color: '#6c757d', fontSize: '14px' }}>Sai</div>
+                      </div>
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '15px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        border: '1px solid #dee2e6'
+                      }}>
+                        <div style={{
+                          fontSize: '24px',
+                          fontWeight: 'bold',
+                          color: parseFloat(selectedTestResult.score) >= 8 ? '#28a745' : parseFloat(selectedTestResult.score) >= 6 ? '#ffc107' : '#dc3545'
+                        }}>
+                          {selectedTestResult.score}/10
+                        </div>
+                        <div style={{ color: '#6c757d', fontSize: '14px' }}>Điểm số</div>
+                      </div>
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '15px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        border: '1px solid #dee2e6'
+                      }}>
+                        <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>
+                          {correctPercentage}%
+                        </div>
+                        <div style={{ color: '#6c757d', fontSize: '14px' }}>Tỷ lệ đúng</div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
+
+              {/* Thông tin chi tiết */}
+              <div style={{
+                backgroundColor: '#f8f9fa',
+                padding: '20px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                border: '1px solid #dee2e6'
+              }}>
+                <h3 style={{ marginTop: 0, marginBottom: '15px' }}>Thông tin chi tiết</h3>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '10px'
+                }}>
+                  <p><strong>Họ và tên:</strong> {selectedTestResult.username}</p>
+                  <p><strong>Đối tượng:</strong> {selectedTestResult.doituong}</p>
+                  <p><strong>Cấp bậc:</strong> {selectedTestResult.capbac || '-'}</p>
+                  <p><strong>Chức vụ:</strong> {selectedTestResult.chucvu || '-'}</p>
+                  <p><strong>Đơn vị:</strong> {selectedTestResult.donvi || '-'}</p>
+                  <p><strong>Thời gian:</strong> {selectedTestResult.timestamp}</p>
+                  <p><strong>Kết quả:</strong> {selectedTestResult.correct}/{selectedTestResult.total} câu</p>
+                  <p><strong>Điểm số:</strong> {selectedTestResult.score}/10</p>
+                </div>
+              </div>
+
+              {/* Chi tiết từng câu hỏi */}
+              <div style={{
+                backgroundColor: '#f8f9fa',
+                padding: '20px',
+                borderRadius: '8px',
+                border: '1px solid #dee2e6'
+              }}>
+                <h3 style={{ marginTop: 0, marginBottom: '15px' }}>Chi tiết từng câu hỏi</h3>
+                <div style={{
+                  maxHeight: '400px',
+                  overflowY: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  {selectedTestResult.questions.map((q, index) => {
+                    const userAnswer = selectedTestResult.answers[index]
+                    const correctAnswer = q.dapAn
+                    const isCorrect = userAnswer === correctAnswer
+
+                    return (
+                      <div key={index} style={{
+                        backgroundColor: 'white',
+                        padding: '15px',
+                        borderRadius: '8px',
+                        border: '1px solid #dee2e6',
+                        borderLeft: `4px solid ${isCorrect ? '#28a745' : '#dc3545'}`
+                      }}>
+                        <div style={{ marginBottom: '8px' }}>
+                          <strong>Câu {index + 1}:</strong> {q.cauHoi}
+                        </div>
+                        <div style={{ marginBottom: '5px', color: '#6c757d', fontSize: '14px' }}>
+                          <strong>Đáp án đã chọn:</strong> {userAnswer !== undefined ? q.luaChon[userAnswer] : 'Không trả lời'}
+                        </div>
+                        <div style={{ marginBottom: '5px', color: '#6c757d', fontSize: '14px' }}>
+                          <strong>Đáp án đúng:</strong> {q.luaChon[correctAnswer]}
+                        </div>
+                        <div style={{
+                          fontWeight: 'bold',
+                          color: isCorrect ? '#28a745' : '#dc3545',
+                          fontSize: '14px'
+                        }}>
+                          {isCorrect ? '✓ Đúng' : '✗ Sai'}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+            <div className="dialog-footer">
+              <button onClick={() => {
+                // Find the index of selectedTestResult in testHistory
+                const index = testHistory.findIndex(result =>
+                  result.timestamp === selectedTestResult.timestamp &&
+                  result.username === selectedTestResult.username &&
+                  result.score === selectedTestResult.score
+                )
+                if (index !== -1) {
+                  exportToPDF(index)
+                }
+              }}>📄 Xuất PDF</button>
+              <button onClick={closeTestResultDetails}>❌ Đóng</button>
+            </div>
+          </dialog>
+        </div>
+      )}
     </div>
   )
 
@@ -1418,6 +1937,7 @@ export default function QuizApp() {
       </div>
     )
   }
+
 
   const renderHeader = () => (
     <header className="header-container">

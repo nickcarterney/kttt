@@ -14,7 +14,8 @@ export default function MusicPlayer({ className = '' }: MusicPlayerProps) {
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
   const [isMinimized, setIsMinimized] = useState(false)
-  const [hasAutoPlayed, setHasAutoPlayed] = useState(false)
+  const [hasUserInteracted, setHasUserInteracted] = useState(false)
+  const [isAutoProgression, setIsAutoProgression] = useState(false)
   const playlistRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -47,6 +48,7 @@ export default function MusicPlayer({ className = '' }: MusicPlayerProps) {
     const updateDuration = () => setDuration(audio.duration)
     const handleEnded = () => {
       // Auto-play next song
+      setIsAutoProgression(true)
       if (currentIndex < playlist.length - 1) {
         setCurrentIndex(currentIndex + 1)
       } else {
@@ -78,10 +80,18 @@ export default function MusicPlayer({ className = '' }: MusicPlayerProps) {
     if (!audio || playlist.length === 0) return
 
     audio.src = playlist[currentIndex]
-    // Always auto-play when switching to new song
-    audio.play().catch(console.error)
-    setIsPlaying(true)
-  }, [currentIndex, playlist])
+
+    // Auto-play if user has interacted with the player or if it's auto progression (song ended)
+    if (hasUserInteracted || isAutoProgression) {
+      audio.play().catch(console.error)
+      setIsPlaying(true)
+    }
+
+    // Reset auto progression flag after handling
+    if (isAutoProgression) {
+      setIsAutoProgression(false)
+    }
+  }, [currentIndex, playlist, hasUserInteracted, isAutoProgression])
 
   // Update volume
   useEffect(() => {
@@ -91,37 +101,37 @@ export default function MusicPlayer({ className = '' }: MusicPlayerProps) {
   }, [volume])
 
   // Auto-play first song once when user clicks anywhere except player (desktop only)
-  useEffect(() => {
-    if (hasAutoPlayed || playlist.length === 0) return
+  // useEffect(() => {
+  //   if (hasAutoPlayed || playlist.length === 0) return
 
-    // Only enable on desktop (width > 768px)
-    const isDesktop = typeof window !== 'undefined' && window.innerWidth > 768
-    if (!isDesktop) return
+  //   // Only enable on desktop (width > 768px)
+  //   const isDesktop = typeof window !== 'undefined' && window.innerWidth > 768
+  //   if (!isDesktop) return
 
-    const handleDocumentClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-      const playerElement = playerRef.current
+  //   const handleDocumentClick = (e: MouseEvent) => {
+  //     const target = e.target as HTMLElement
+  //     const playerElement = playerRef.current
 
-      // Check if click is outside the player
-      if (playerElement && !playerElement.contains(target)) {
-        // Auto-play first song once
-        const audio = audioRef.current
-        if (audio && playlist.length > 0 && !hasAutoPlayed) {
-          setCurrentIndex(0)
-          audio.src = playlist[0]
-          audio.play().catch(console.error)
-          setHasAutoPlayed(true)
-        }
-      }
-    }
+  //     // Check if click is outside the player
+  //     if (playerElement && !playerElement.contains(target)) {
+  //       // Auto-play first song once
+  //       const audio = audioRef.current
+  //       if (audio && playlist.length > 0 && !hasAutoPlayed) {
+  //         setCurrentIndex(0)
+  //         audio.src = playlist[0]
+  //         audio.play().catch(console.error)
+  //         setHasAutoPlayed(true)
+  //       }
+  //     }
+  //   }
 
-    // Add click listener
-    document.addEventListener('click', handleDocumentClick)
+  //   // Add click listener
+  //   document.addEventListener('click', handleDocumentClick)
 
-    return () => {
-      document.removeEventListener('click', handleDocumentClick)
-    }
-  }, [hasAutoPlayed, playlist.length])
+  //   return () => {
+  //     document.removeEventListener('click', handleDocumentClick)
+  //   }
+  // }, [hasAutoPlayed, playlist.length])
 
   const togglePlayPause = () => {
     const audio = audioRef.current
@@ -132,6 +142,7 @@ export default function MusicPlayer({ className = '' }: MusicPlayerProps) {
     } else {
       audio.play().catch(console.error)
     }
+    setHasUserInteracted(true)
   }
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,6 +178,7 @@ export default function MusicPlayer({ className = '' }: MusicPlayerProps) {
   const selectSong = (index: number) => {
     setCurrentIndex(index)
     setIsPlaying(true)
+    setHasUserInteracted(true)
     if (audioRef.current && playlist.length > 0) {
       audioRef.current.src = playlist[index]
       audioRef.current.play().catch(console.error)

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { jsPDF } from 'jspdf'
+import ExcelJS from 'exceljs'
 import MusicPlayer from './MusicPlayer'
 
 interface Question {
@@ -64,6 +65,12 @@ export default function QuizApp() {
   const [isAddQuestionFormVisible, setIsAddQuestionFormVisible] = useState(false)
   const [allTestResults, setAllTestResults] = useState<TestResult[]>([])
   const [selectedTestResult, setSelectedTestResult] = useState<TestResult | null>(null)
+
+  // Filter states for admin results
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [selectedObject, setSelectedObject] = useState('')
+  const [unitFilter, setUnitFilter] = useState('')
 
   // Form state
   const [loginForm, setLoginForm] = useState({
@@ -248,6 +255,149 @@ export default function QuizApp() {
     }
   }
 
+  // Get unique objects for dropdown
+  const getUniqueObjects = () => {
+    const objects = allTestResults.map(result => result.doituong).filter(Boolean)
+    return Array.from(new Set(objects)).sort()
+  }
+
+  // Filter test results based on current filters
+  const getFilteredResults = () => {
+    return allTestResults.filter(result => {
+      // Date range filter
+      if (startDate || endDate) {
+        if (!result.timestamp) return false
+
+        // Parse timestamp (assuming format like "2024-12-10 14:30:25" or similar)
+        const resultDate = new Date(result.timestamp.split(' ')[0]) // Get date part only
+        if (isNaN(resultDate.getTime())) return false
+
+        if (startDate) {
+          const start = new Date(startDate)
+          if (resultDate < start) return false
+        }
+
+        if (endDate) {
+          const end = new Date(endDate)
+          end.setHours(23, 59, 59, 999) // Include the entire end date
+          if (resultDate > end) return false
+        }
+      }
+
+      // Object filter (dropdown selection)
+      if (selectedObject && result.doituong !== selectedObject) {
+        return false
+      }
+
+      // Unit filter (đơn vị)
+      if (unitFilter && !result.donvi?.toLowerCase().includes(unitFilter.toLowerCase())) {
+        return false
+      }
+
+      return true
+    })
+  }
+
+  // Export filtered results to Excel
+  const exportToExcel = async () => {
+    const filteredResults = getFilteredResults()
+
+    if (filteredResults.length === 0) {
+      alert('Không có dữ liệu để xuất!')
+      return
+    }
+
+    // Create workbook and worksheet
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('Kết quả bài thi')
+
+    // Define columns
+    worksheet.columns = [
+      { header: 'STT', key: 'stt', width: 5 },
+      { header: 'Họ tên', key: 'hoTen', width: 20 },
+      { header: 'Đối tượng', key: 'doiTuong', width: 15 },
+      { header: 'Đơn vị', key: 'donVi', width: 20 },
+      { header: 'Đúng', key: 'dung', width: 8 },
+      { header: 'Sai', key: 'sai', width: 8 },
+      { header: 'Tổng câu', key: 'tongCau', width: 10 },
+      { header: 'Điểm', key: 'diem', width: 12 },
+      { header: 'Thời gian', key: 'thoiGian', width: 20 }
+    ]
+
+    // Add data rows
+    filteredResults.forEach((result, index) => {
+      worksheet.addRow({
+        stt: index + 1,
+        hoTen: result.username,
+        doiTuong: result.doituong,
+        donVi: result.donvi || '-',
+        dung: result.correct,
+        sai: result.total - result.correct,
+        tongCau: result.total,
+        diem: `${((result.correct / result.total) * 10).toFixed(1)}/10`,
+        thoiGian: result.timestamp
+      })
+    })
+
+    // Style header row
+    const headerRow = worksheet.getRow(1)
+    headerRow.eachCell((cell) => {
+      cell.font = {
+        bold: true,
+        size: 12,
+        color: { argb: 'FF000000' } // Black text
+      }
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF90EE90' } // Light green background
+      }
+      cell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      }
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FF000000' } },
+        bottom: { style: 'thin', color: { argb: 'FF000000' } },
+        left: { style: 'thin', color: { argb: 'FF000000' } },
+        right: { style: 'thin', color: { argb: 'FF000000' } }
+      }
+    })
+
+    // Style data rows
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) { // Skip header row
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+            bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+            left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+            right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
+          }
+          cell.alignment = {
+            horizontal: 'left',
+            vertical: 'middle'
+          }
+        })
+      }
+    })
+
+    // Generate filename with current date
+    const now = new Date()
+    const filename = `ket_qua_bai_thi_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}.xlsx`
+
+    // Save file
+    const buffer = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    window.URL.revokeObjectURL(url)
+  }
+
   const loadSettings = async () => {
     try {
       const response = await fetch('/api/settings')
@@ -393,26 +543,40 @@ export default function QuizApp() {
     }
 
     try {
-      // Fetch admin credentials from settings via API
-      const response = await fetch('/api/settings')
+      // Authenticate with admin auth endpoint
+      const response = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: adminForm.username,
+          password: adminForm.password
+        }),
+      })
+
       if (!response.ok) {
-        alert('Không thể kết nối đến máy chủ. Vui lòng thử lại!')
+        if (response.status === 401) {
+          alert('Tên admin hoặc mật khẩu không đúng!')
+          console.log('❌ Admin login failed - invalid credentials')
+        } else {
+          alert('Không thể kết nối đến máy chủ. Vui lòng thử lại!')
+        }
         return
       }
 
-      const settings = await response.json()
+      const authResult = await response.json()
 
-      // Compare with admin credentials from settings
-      if (adminForm.username === settings.adminUsername && adminForm.password === settings.adminPassword) {
+      if (authResult.success) {
         setIsAdmin(true)
-        setUsername(adminForm.username)
+        setUsername(authResult.username)
         setCurrentDoituong('Admin')
         setCurrentScreen('settings')
 
         // Save admin session to localStorage
         if (typeof window !== 'undefined') {
           localStorage.setItem('adminLoggedIn', 'true')
-          localStorage.setItem('adminUsername', adminForm.username)
+          localStorage.setItem('adminUsername', authResult.username)
           localStorage.setItem('adminLoginTime', Date.now().toString())
         }
 
@@ -747,11 +911,6 @@ export default function QuizApp() {
     doc.save(`KetQuaThi_${result.timestamp.replace(/[:,\s\/]/g, '_')}.pdf`)
   }
 
-  const clearHistory = () => {
-    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử thi không?')) {
-      saveTestHistory([])
-    }
-  }
 
   // Show review screen
   const showReviewScreen = (doituongOverride?: string) => {
@@ -790,12 +949,12 @@ export default function QuizApp() {
           console.log('🔄 Restoring admin session from localStorage')
 
           // Verify admin credentials are still valid
-          const response = await fetch('/api/settings')
+          const response = await fetch(`/api/admin/auth?username=${encodeURIComponent(adminUsername)}`)
           if (response.ok) {
-            const settings = await response.json()
+            const authResult = await response.json()
 
             // Double-check credentials match
-            if (adminUsername === settings.adminUsername) {
+            if (authResult.valid && adminUsername === authResult.username) {
               setIsAdmin(true)
               setUsername(adminUsername)
               setCurrentDoituong('Admin')
@@ -1337,7 +1496,7 @@ export default function QuizApp() {
                   <input
                     id="dialogCurrentUsername"
                     type="text"
-                    value={settings.adminUsername}
+                    value={username}
                     readOnly
                     style={{
                       width: '100%',
@@ -1424,19 +1583,15 @@ export default function QuizApp() {
               </div>
             </div>
             <div className="dialog-footer">
-              <button onClick={() => {
+              <button onClick={async () => {
                 const newUsername = (document.getElementById('dialogNewUsername') as HTMLInputElement)?.value?.trim()
                 const currentPassword = (document.getElementById('dialogCurrentPassword') as HTMLInputElement)?.value
                 const newPassword = (document.getElementById('dialogNewPassword') as HTMLInputElement)?.value
                 const confirmPassword = (document.getElementById('dialogConfirmPassword') as HTMLInputElement)?.value
 
+                // Validate required current password
                 if (!currentPassword) {
                   alert('Vui lòng nhập mật khẩu hiện tại!')
-                  return
-                }
-
-                if (currentPassword !== settings.adminPassword) {
-                  alert('Mật khẩu hiện tại không đúng!')
                   return
                 }
 
@@ -1446,18 +1601,13 @@ export default function QuizApp() {
                   return
                 }
 
-                let newSettings = { ...settings }
-
-                // Update username if provided
-                if (newUsername) {
-                  if (newUsername.length < 3) {
-                    alert('Tên đăng nhập phải có ít nhất 3 ký tự!')
-                    return
-                  }
-                  newSettings.adminUsername = newUsername
+                // Validate new username if provided
+                if (newUsername && newUsername.length < 3) {
+                  alert('Tên đăng nhập phải có ít nhất 3 ký tự!')
+                  return
                 }
 
-                // Update password if provided
+                // Validate new password if provided
                 if (newPassword || confirmPassword) {
                   if (!newPassword || !confirmPassword) {
                     alert('Vui lòng nhập đầy đủ mật khẩu mới và xác nhận!')
@@ -1473,12 +1623,44 @@ export default function QuizApp() {
                     alert('Mật khẩu mới phải có ít nhất 6 ký tự!')
                     return
                   }
-
-                  newSettings.adminPassword = newPassword
                 }
 
-                // Save settings
-                saveSettings(newSettings)
+                // Update admin credentials using auth endpoint
+                try {
+                  const updateResponse = await fetch('/api/admin/auth', {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      currentUsername: username,
+                      currentPassword: currentPassword,
+                      newUsername: newUsername || undefined,
+                      newPassword: newPassword || undefined
+                    }),
+                  })
+
+                  if (!updateResponse.ok) {
+                    const errorData = await updateResponse.json()
+                    alert(errorData.error || 'Không thể cập nhật thông tin admin!')
+                    return
+                  }
+
+                  await updateResponse.json()
+
+                  // Update local state
+                  if (newUsername) {
+                    setUsername(newUsername)
+                  }
+
+                  alert('Cập nhật thông tin admin thành công!')
+
+                  // Close dialog
+                  hideAdminPasswordDialog()
+                } catch (error) {
+                  console.error('Error updating admin credentials:', error)
+                  alert('Không thể cập nhật thông tin admin. Vui lòng thử lại!')
+                }
 
                 // Clear form and close dialog
                 ;(document.getElementById('dialogNewUsername') as HTMLInputElement).value = ''
@@ -1487,7 +1669,6 @@ export default function QuizApp() {
                 ;(document.getElementById('dialogConfirmPassword') as HTMLInputElement).value = ''
 
                 hideAdminPasswordDialog()
-                alert('Thông tin admin đã được cập nhật thành công!')
               }}>💾 Lưu</button>
               <button onClick={hideAdminPasswordDialog}>❌ Hủy</button>
             </div>
@@ -1742,11 +1923,146 @@ export default function QuizApp() {
   )
 
   const renderAdminResultsScreen = () => {
+    const filteredResults = getFilteredResults()
+
     return (
       <div id="admin-results-screen" className="container">
         <h1>QUẢN LÝ KẾT QUẢ BÀI THI</h1>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <button onClick={showSettings} className="back-btn">Quản lý bộ đề</button>
+        </div>
+
+        {/* Filter Controls */}
+        <div style={{
+          backgroundColor: '#f8f9fa',
+          border: '1px solid #dee2e6',
+          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: '20px'
+        }}>
+          <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#495057' }}>🔍 Bộ lọc kết quả</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px' }}>
+            <div>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '12px' }}>
+                <div style={{ flex: 1 }}>
+                  <label htmlFor="startDate" style={{ display: 'block', fontSize: '12px', color: '#6c757d', marginBottom: '2px' }}>
+                    Từ ngày:
+                  </label>
+                  <input
+                    id="startDate"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '6px 8px',
+                      border: '1px solid #ced4da',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label htmlFor="endDate" style={{ display: 'block', fontSize: '12px', color: '#6c757d', marginBottom: '2px' }}>
+                    Đến ngày:
+                  </label>
+                  <input
+                    id="endDate"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '6px 8px',
+                      border: '1px solid #ced4da',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label htmlFor="objectFilter" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Đối tượng:
+              </label>
+              <select
+                id="objectFilter"
+                value={selectedObject}
+                onChange={(e) => setSelectedObject(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #ced4da',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  backgroundColor: 'white'
+                }}
+              >
+                <option value="">Tất cả đối tượng</option>
+                {getUniqueObjects().map(obj => (
+                  <option key={obj} value={obj}>{obj}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="unitFilter" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Đơn vị:
+              </label>
+              <input
+                id="unitFilter"
+                type="text"
+                placeholder="Tìm theo đơn vị..."
+                value={unitFilter}
+                onChange={(e) => setUnitFilter(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #ced4da',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+          </div>
+          <div style={{ marginTop: '15px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              onClick={() => {
+                setStartDate('')
+                setEndDate('')
+                setSelectedObject('')
+                setUnitFilter('')
+              }}
+              style={{
+                padding: '6px 12px',
+                backgroundColor: '#6c757d',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              🗑️ Xóa bộ lọc
+            </button>
+            <button
+              onClick={exportToExcel}
+              style={{
+                padding: '6px 12px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              📊 Xuất Excel
+            </button>
+            <span style={{ fontSize: '14px', color: '#6c757d', marginLeft: 'auto' }}>
+              Hiển thị: {filteredResults.length} / {allTestResults.length} kết quả
+            </span>
+          </div>
         </div>
 
         {/* Danh sách kết quả */}
@@ -1760,9 +2076,9 @@ export default function QuizApp() {
             Danh sách bài thi
           </h2>
           <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
-            {allTestResults.length === 0 ? (
+            {filteredResults.length === 0 ? (
               <div style={{ padding: '40px', textAlign: 'center', color: '#6c757d' }}>
-                Chưa có kết quả bài thi nào
+                {allTestResults.length === 0 ? 'Chưa có kết quả bài thi nào' : 'Không tìm thấy kết quả phù hợp với bộ lọc'}
               </div>
             ) : (
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -1780,7 +2096,7 @@ export default function QuizApp() {
                   </tr>
                 </thead>
                 <tbody>
-                  {allTestResults.map((result, index) => (
+                  {filteredResults.map((result, index) => (
                     <tr key={result.id || index} style={{ borderBottom: '1px solid #dee2e6' }}>
                       <td style={{ padding: '12px' }}>{index + 1}</td>
                       <td style={{ padding: '12px' }}>{result.username}</td>

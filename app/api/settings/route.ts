@@ -23,18 +23,30 @@ function ensureFileExists() {
 
 export async function GET() {
   try {
+    let settings
+
     if (isVercel) {
       // On Vercel, return default settings
-      return NextResponse.json(defaultSettings)
+      settings = defaultSettings
+    } else {
+      ensureFileExists()
+      const fileContents = fs.readFileSync(settingsFilePath, 'utf8')
+      settings = JSON.parse(fileContents)
     }
 
-    ensureFileExists()
-    const fileContents = fs.readFileSync(settingsFilePath, 'utf8')
-    const settings = JSON.parse(fileContents)
-    return NextResponse.json(settings)
+    // Return only public settings (exclude sensitive admin credentials)
+    const publicSettings = {
+      defaultQuestionsCount: settings.defaultQuestionsCount,
+      examTime: settings.examTime
+    }
+
+    return NextResponse.json(publicSettings)
   } catch (error) {
     console.error('Error reading settings file:', error)
-    return NextResponse.json(defaultSettings)
+    return NextResponse.json({
+      defaultQuestionsCount: defaultSettings.defaultQuestionsCount,
+      examTime: defaultSettings.examTime
+    })
   }
 }
 
